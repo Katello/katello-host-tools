@@ -7,7 +7,7 @@ TOP_DIR_FEDORA=$1
 # top dir of Katello git checkout
 TOP_DIR_GIT=$2
 
-PACKAGE_LIST="katello-agent katello-cli"
+PACKAGE_LIST="katello-agent"
 
 
 if [ -z "$TOP_DIR_FEDORA" -o ! -d "$TOP_DIR_FEDORA" ]; then
