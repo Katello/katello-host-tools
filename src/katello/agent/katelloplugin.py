@@ -259,7 +259,7 @@ class EnabledReport:
             fn = os.path.basename(r.repofile)
             if fn != repofn:
                 continue
-            item = dict(repositoryid=r.id)
+            item = dict(repositoryid=r.id, baseurl=r.baseurl)
             enabled.append(item)
         return dict(repos=enabled)
 
