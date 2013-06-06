@@ -9,3 +9,6 @@ blacklist =
 [katello-nightly-fedora18]
 disttag = .fc18
 blacklist =
+
+[katello-nightly-fedora19]
+disttag = .fc19
