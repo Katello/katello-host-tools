@@ -1,5 +1,5 @@
 Name: katello-agent
-Version: 1.4.3
+Version: 1.4.4
 Release: 1%{?dist}
 Summary: The Katello Agent
 Group:   Development/Languages
@@ -48,6 +48,9 @@ LC_ALL=C service goferd status | grep 'is running' && service goferd restart
 %doc LICENSE
 
 %changelog
+* Wed Jul 31 2013 Partha Aji <paji@redhat.com> 1.4.4-1
+- add katello-nightly-fedora19 to tito.props (msuchy@redhat.com)
+
 * Thu Jun 06 2013 Miroslav Suchý <msuchy@redhat.com> 1.4.3-1
 - 893596 - sending up baseurl of repos from katello-agent (jsherril@redhat.com)
 
