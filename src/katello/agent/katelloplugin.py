@@ -26,6 +26,7 @@ from yum import YumBase
 from gofer.decorators import *
 from gofer.agent.plugin import Plugin
 from gofer.pmon import PathMonitor
+from gofer.agent.rmi import Context
 
 from subscription_manager.certlib import ConsumerIdentity
 from rhsm.connection import UEPConnection
@@ -142,9 +143,45 @@ class RepoMonitor:
         uep = UEP()
         uep.report_enabled(uuid, report.content)
 
+
+class Conduit(HandlerConduit):
+    """
+    Provides integration between the gofer and pulp agent handler frameworks.
+    """
+
+    @property
+    def consumer_id(self):
+        """
+        Get the current consumer ID
+        @return: The unique consumer ID of the currently running agent
+        @rtype:  str
+        """
+        certificate = ConsumerIdentity.read()
+        return certificate.getConsumerId()
+
+    def update_progress(self, report):
+        """
+        Send the updated progress report.
+        @param report: A handler progress report.
+        @type report: object
+        """
+        context = Context.current()
+        context.progress.details = report
+        context.progress.report()
+
+    def cancelled(self):
+        """
+        Get whether the current operation has been cancelled.
+        @return: True if cancelled, else False.
+        @rtype: bool
+        """
+        context = Context.current()
+        return context.cancelled()
+
 #
 # API
 #
+
 
 class Content:
     """
@@ -164,7 +201,7 @@ class Content:
         @return: A dispatch report.
         @rtype: DispatchReport
         """
-        conduit = HandlerConduit()
+        conduit = Conduit()
         report = dispatcher.install(conduit, units, options)
         return report.dict()
 
@@ -181,7 +218,7 @@ class Content:
         @return: A dispatch report.
         @rtype: DispatchReport
         """
-        conduit = HandlerConduit()
+        conduit = Conduit()
         report = dispatcher.update(conduit, units, options)
         return report.dict()
 
@@ -198,13 +235,14 @@ class Content:
         @return: A dispatch report.
         @rtype: DispatchReport
         """
-        conduit = HandlerConduit()
+        conduit = Conduit()
         report = dispatcher.uninstall(conduit, units, options)
         return report.dict()
 
 #
 # Utilities
 #
+
 
 class EnabledReport:
     """
