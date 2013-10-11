@@ -1,5 +1,5 @@
 Name: katello-agent
-Version: 1.5.0
+Version: 1.5.1
 Release: 1%{?dist}
 Summary: The Katello Agent
 Group:   Development/Languages
@@ -48,6 +48,9 @@ LC_ALL=C service goferd status | grep 'is running' && service goferd restart
 %doc LICENSE
 
 %changelog
+* Fri Oct 11 2013 Partha Aji <paji@redhat.com> 1.5.1-1
+- Bumping package versions for 1.5 (paji@redhat.com)
+
 * Fri Oct 11 2013 Partha Aji <paji@redhat.com> 1.4.5-1
 - Implement conduit for pulp 2.3 compat (jortel@redhat.com)
 - Autobuild f19 packages (paji@redhat.com)
