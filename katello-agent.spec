@@ -1,5 +1,5 @@
 Name: katello-agent
-Version: 1.4.4
+Version: 1.4.5
 Release: 1%{?dist}
 Summary: The Katello Agent
 Group:   Development/Languages
@@ -48,6 +48,10 @@ LC_ALL=C service goferd status | grep 'is running' && service goferd restart
 %doc LICENSE
 
 %changelog
+* Fri Oct 11 2013 Partha Aji <paji@redhat.com> 1.4.5-1
+- Implement conduit for pulp 2.3 compat (jortel@redhat.com)
+- Autobuild f19 packages (paji@redhat.com)
+
 * Wed Jul 31 2013 Partha Aji <paji@redhat.com> 1.4.4-1
 - add katello-nightly-fedora19 to tito.props (msuchy@redhat.com)
 
