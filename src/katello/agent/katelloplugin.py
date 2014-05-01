@@ -22,11 +22,13 @@ import sys
 sys.path.append('/usr/share/rhsm')
 
 from yum import YumBase
+from logging import getLogger, Logger
 
 from gofer.decorators import *
 from gofer.agent.plugin import Plugin
 from gofer.pmon import PathMonitor
 from gofer.agent.rmi import Context
+from gofer.config import Config
 
 from subscription_manager.certlib import ConsumerIdentity
 from rhsm.connection import UEPConnection
@@ -34,115 +36,102 @@ from rhsm.connection import UEPConnection
 from pulp.agent.lib.dispatcher import Dispatcher
 from pulp.agent.lib.conduit import Conduit as HandlerConduit
 
-from logging import getLogger, Logger
 
+# This plugin
+plugin = Plugin.find(__name__)
+
+# Path monitoring
+path_monitor = PathMonitor()
 
 log = getLogger(__name__)
-plugin = Plugin.find(__name__)
-dispatcher = Dispatcher()
-cfg = plugin.cfg()
 
 
-def getbool(v):
+RHSM_CONFIG_PATH = '/etc/rhsm/rhsm.conf'
+REPOSITORY_PATH = '/etc/yum.repos.d/redhat.repo'
+
+
+def bundle(certificate):
     """
-    Get string bool value.
-    @param v: A string.
-    @type v: str
-    @return: True if v in (TRUE|YES|1)
-    @rtype: bool
+    Bundle the key and cert and write to a file.
+    :param certificate: A consumer identity certificate.
+    :type certificate: ConsumerIdentity
+    :return: The path to written bundle.
+    :rtype: str
     """
-    if v:
-        return v.upper() in ('TRUE', 'YES', '1')
+    path = os.path.join(certificate.PATH, 'bundle.pem')
+    fp = open(path, 'w')
+    try:
+        fp.write(certificate.key)
+        fp.write(certificate.cert)
+        return path
+    finally:
+        fp.close()
+  
+
+def registration_changed(path):
+    """
+    Notification that a change in registration has been detected.
+    On registration: setup the plugin; attach to the message broker.
+    On un-registration: detach from the message broker.
+    :param path: The path to the file that changed.
+    :type path: str
+    """
+    log.info('changed: %s', path)
+    if ConsumerIdentity.existsAndValid():
+        setup_plugin()
+        plugin.attach()
     else:
-        return False
+        plugin.detach()
 
 
-class RegistrationMonitor:
-    
-    pmon = PathMonitor()
-    
-    @classmethod
-    @action(days=0x8E94)
-    def init(cls):
-        """
-        Start path monitor to track changes in the
-        rhsm identity certificate.
-        """
-        path = ConsumerIdentity.certpath()
-        cls.pmon.add(path, cls.changed)
-        cls.pmon.start()
-        
-    @classmethod
-    def changed(cls, path):
-        """
-        A change in the rhsm certificate has been detected.
-        When deleted: disconnect from qpid.
-        When added/updated: reconnect to qpid.
-        @param path: The changed file (ignored).
-        @type path: str
-        """
-        log.info('changed: %s', path)
-        if ConsumerIdentity.existsAndValid():
-            cert = ConsumerIdentity.read()
-            cls.bundle(cert)
-            uuid = cert.getConsumerId()
-            plugin.setuuid(uuid)
-        else:
-            plugin.setuuid(None)
-    
-    @classmethod
-    def bundle(cls, cid):
-        """
-        Bundle the key and cert and write to a file.
-        @param cid: A consumer id object.
-        @type cid: L{ConsumerIdentity}
-        @return: The path to written bundle.
-        @rtype: str
-        """
-        path = os.path.join(cid.PATH, 'bundle.pem')
-        f = open(path, 'w')
-        try:
-            f.write(cid.key)
-            f.write(cid.cert)
-            return path
-        finally:
-            f.close()
-
-
-class RepoMonitor:
+def send_enabled_report(path=REPOSITORY_PATH):
     """
-    Monitor changes in the rhsm .repo file.
-    Changes reported to UEP.
-    @cvar PATH: The path to monitor.
-        Unable to get from RHSM without side effects.
-    @type PATH: str
+    Send the enabled repository report.
+    :param path: The path to a repository file.
+    :type path: str
     """
+    if not ConsumerIdentity.existsAndValid():
+        # not registered
+        return
+    uep = UEP()
+    certificate = ConsumerIdentity.read()
+    report = EnabledReport(path)
+    uep.report_enabled(certificate.getConsumerId(), report.content)
 
-    PATH = '/etc/yum.repos.d/redhat.repo'
 
-    @classmethod
-    @action(days=0x8E94)
-    def init(cls):
-        RegistrationMonitor.pmon.add(cls.PATH, cls.changed)
+def setup_plugin():
+    """
+    Setup the plugin based on registration status using the RHSM configuration.
+    """
+    if not ConsumerIdentity.existsAndValid():
+        # not registered
+        return
+    cfg = plugin.cfg()
+    rhsm_conf = Config(RHSM_CONFIG_PATH)
+    certificate = ConsumerIdentity.read()
+    cfg.messaging.url = rhsm_conf['server']['hostname']
+    cfg.messaging.uuid = 'pulp.agent.%s' % certificate.getConsumerId()
+    cfg.messaging.cacert = '/etc/rhsm/ca/candlepin-local.pem'
+    cfg.messaging.clientcert = '/etc/pki/consumer/bundle.pem'
+    bundle(certificate)
+    
 
-    @classmethod
-    def changed(cls, path):
-        """
-        A change in the rhsm .repo has been detected.
-        The change is reported to the UEP.
-        @param path: The changed file.
-        @type path: str
-        """
-        log.info('changed: %s', path)
-        uuid = plugin.getuuid()
-        if not uuid:
-            # not registered
-            return
-        filter = os.path.basename(path)
-        report = EnabledReport(filter)
-        uep = UEP()
-        uep.report_enabled(uuid, report.content)
-
+@initializer
+def init_plugin():
+    """
+    Initialize the plugin.
+    Called (once) immediately after the plugin is loaded.
+     - setup plugin configuration.
+     - send an initial repository enabled report.
+     - setup path monitoring.
+    """
+    setup_plugin()
+    send_enabled_report()
+    path = ConsumerIdentity.certpath()
+    path_monitor.add(path, registration_changed)
+    path_monitor.add(REPOSITORY_PATH, send_enabled_report)
+    path_monitor.start()
+    
 
 class Conduit(HandlerConduit):
     """
@@ -153,8 +142,8 @@ class Conduit(HandlerConduit):
     def consumer_id(self):
         """
         Get the current consumer ID
-        @return: The unique consumer ID of the currently running agent
-        @rtype:  str
+        :return: The unique consumer ID of the currently running agent
+        :rtype:  str
         """
         certificate = ConsumerIdentity.read()
         return certificate.getConsumerId()
@@ -162,8 +151,8 @@ class Conduit(HandlerConduit):
     def update_progress(self, report):
         """
         Send the updated progress report.
-        @param report: A handler progress report.
-        @type report: object
+        :param report: A handler progress report.
+        :type report: object
         """
         context = Context.current()
         context.progress.details = report
@@ -172,76 +161,11 @@ class Conduit(HandlerConduit):
     def cancelled(self):
         """
         Get whether the current operation has been cancelled.
-        @return: True if cancelled, else False.
-        @rtype: bool
+        :return: True if cancelled, else False.
+        :rtype: bool
         """
         context = Context.current()
         return context.cancelled()
-
-#
-# API
-#
-
-
-class Content:
-    """
-    Pulp Content Management.
-    """
-
-    @remote
-    def install(self, units, options):
-        """
-        Install the specified content units using the specified options.
-        Delegated to content handlers.
-        @param units: A list of content units to be installed.
-        @type units: list of:
-            { type_id:<str>, unit_key:<dict> }
-        @param options: Install options; based on unit type.
-        @type options: dict
-        @return: A dispatch report.
-        @rtype: DispatchReport
-        """
-        conduit = Conduit()
-        report = dispatcher.install(conduit, units, options)
-        return report.dict()
-
-    @remote
-    def update(self, units, options):
-        """
-        Update the specified content units using the specified options.
-        Delegated to content handlers.
-        @param units: A list of content units to be updated.
-        @type units: list of:
-            { type_id:<str>, unit_key:<dict> }
-        @param options: Update options; based on unit type.
-        @type options: dict
-        @return: A dispatch report.
-        @rtype: DispatchReport
-        """
-        conduit = Conduit()
-        report = dispatcher.update(conduit, units, options)
-        return report.dict()
-
-    @remote
-    def uninstall(self, units, options):
-        """
-        Uninstall the specified content units using the specified options.
-        Delegated to content handlers.
-        @param units: A list of content units to be uninstalled.
-        @type units: list of:
-            { type_id:<str>, unit_key:<dict> }
-        @param options: Uninstall options; based on unit type.
-        @type options: dict
-        @return: A dispatch report.
-        @rtype: DispatchReport
-        """
-        conduit = Conduit()
-        report = dispatcher.uninstall(conduit, units, options)
-        return report.dict()
-
-#
-# Utilities
-#
 
 
 class EnabledReport:
@@ -253,25 +177,25 @@ class EnabledReport:
       - repos[] <dict>:
         - repositoryid <str>
         - baseurl <str>
-    @type content: dict
+    :type content: dict
     """
 
     def __init__(self, repofn):
         """
-        @param repofn: The .repo file basename used to
+        :param repofn: The .repo file basename used to
             filter the report.
-        @type repofn: str
+        :type repofn: str
         """
         self.content = self.__report(repofn)
 
     def __report(self, repofn):
         """
         Generate the report content.
-        @param repofn: The .repo file basename used to
+        :param repofn: The .repo file basename used to
             filter the report.
-        @type repofn: str
-        @return: The report content
-        @rtype: dict
+        :type repofn: str
+        :return: The report content
+        :rtype: dict
         """
         yb = Yum()
         try:
@@ -282,13 +206,13 @@ class EnabledReport:
     def __enabled(self, yb, repofn):
         """
         Get enabled repos part of the report.
-        @param yb: yum lib.
-        @type yb: YumBase
-        @param repofn: The .repo file basename used to
+        :param yb: yum lib.
+        :type yb: YumBase
+        :param repofn: The .repo file basename used to
             filter the report.
-        @type repofn: str
-        @return: The repo list content
-        @rtype: dict
+        :type repofn: str
+        :return: The repo list content
+        :rtype: dict
         """
         enabled = []
         for r in yb.repos.listEnabled():
@@ -314,7 +238,7 @@ class Yum(YumBase):
         """
         Clean handlers leaked by yum.
         """
-        for n,lg in Logger.manager.loggerDict.items():
+        for n, lg in Logger.manager.loggerDict.items():
             if not n.startswith('yum.'):
                 continue
             for h in lg.handlers:
@@ -341,14 +265,77 @@ class UEP(UEPConnection):
         cert = ConsumerIdentity.certpath()
         UEPConnection.__init__(self, key_file=key, cert_file=cert)
 
-    def report_enabled(self, uuid, report):
+    def report_enabled(self, consumer_id, report):
         """
-        Report enabled (repos) to the UEP.
-        @param uuid: The consumer ID.
-        @type uuid: str
-        @param report: The report to send.
-        @type report: dict
+        Report enabled repositories to the UEP.
+        :param consumer_id: The consumer ID.
+        :type consumer_id: str
+        :param report: The report to send.
+        :type report: dict
         """
         log.info('reporting: %s', report)
-        method = '/systems/%s/enabled_repos' % self.sanitize(uuid)
+        method = '/systems/%s/enabled_repos' % self.sanitize(consumer_id)
         return self.conn.request_put(method, report)
+
+
+# --- API --------------------------------------------------------------------
+
+
+class Content:
+    """
+    Pulp Content Management.
+    """
+
+    @remote
+    def install(self, units, options):
+        """
+        Install the specified content units using the specified options.
+        Delegated to content handlers.
+        :param units: A list of content units to be installed.
+        :type units: list of:
+            { type_id:<str>, unit_key:<dict> }
+        :param options: Install options; based on unit type.
+        :type options: dict
+        :return: A dispatch report.
+        :rtype: DispatchReport
+        """
+        conduit = Conduit()
+        dispatcher = Dispatcher()
+        report = dispatcher.install(conduit, units, options)
+        return report.dict()
+
+    @remote
+    def update(self, units, options):
+        """
+        Update the specified content units using the specified options.
+        Delegated to content handlers.
+        :param units: A list of content units to be updated.
+        :type units: list of:
+            { type_id:<str>, unit_key:<dict> }
+        :param options: Update options; based on unit type.
+        :type options: dict
+        :return: A dispatch report.
+        :rtype: DispatchReport
+        """
+        conduit = Conduit()
+        dispatcher = Dispatcher()
+        report = dispatcher.update(conduit, units, options)
+        return report.dict()
+
+    @remote
+    def uninstall(self, units, options):
+        """
+        Uninstall the specified content units using the specified options.
+        Delegated to content handlers.
+        :param units: A list of content units to be uninstalled.
+        :type units: list of:
+            { type_id:<str>, unit_key:<dict> }
+        :param options: Uninstall options; based on unit type.
+        :type options: dict
+        :return: A dispatch report.
+        :rtype: DispatchReport
+        """
+        conduit = Conduit()
+        dispatcher = Dispatcher()
+        report = dispatcher.uninstall(conduit, units, options)
+        return report.dict()
