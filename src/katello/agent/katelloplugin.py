@@ -47,6 +47,7 @@ log = getLogger(__name__)
 
 
 RHSM_CONFIG_PATH = '/etc/rhsm/rhsm.conf'
+
 REPOSITORY_PATH = '/etc/yum.repos.d/redhat.repo'
 
 
@@ -109,10 +110,8 @@ def setup_plugin():
     cfg = plugin.cfg()
     rhsm_conf = Config(RHSM_CONFIG_PATH)
     certificate = ConsumerIdentity.read()
-    cfg.messaging.url = rhsm_conf['server']['hostname']
+    cfg.messaging.url = 'ssl://%s:5671' % rhsm_conf['server']['hostname']
     cfg.messaging.uuid = 'pulp.agent.%s' % certificate.getConsumerId()
-    cfg.messaging.cacert = '/etc/rhsm/ca/candlepin-local.pem'
-    cfg.messaging.clientcert = '/etc/pki/consumer/bundle.pem'
     bundle(certificate)
     
 
@@ -180,36 +179,13 @@ class EnabledReport:
     :type content: dict
     """
 
-    def __init__(self, repofn):
-        """
-        :param repofn: The .repo file basename used to
-            filter the report.
-        :type repofn: str
-        """
-        self.content = self.__report(repofn)
-
-    def __report(self, repofn):
-        """
-        Generate the report content.
-        :param repofn: The .repo file basename used to
-            filter the report.
-        :type repofn: str
-        :return: The report content
-        :rtype: dict
-        """
-        yb = Yum()
-        try:
-            return dict(enabled_repos=self.__enabled(yb, repofn))
-        finally:
-            yb.close()
-
-    def __enabled(self, yb, repofn):
+    @staticmethod
+    def find_enabled(yb, repofn):
         """
         Get enabled repos part of the report.
         :param yb: yum lib.
         :type yb: YumBase
-        :param repofn: The .repo file basename used to
-            filter the report.
+        :param repofn: The .repo file basename used to filter the report.
         :type repofn: str
         :return: The repo list content
         :rtype: dict
@@ -224,6 +200,29 @@ class EnabledReport:
             item = dict(repositoryid=r.id, baseurl=r.baseurl)
             enabled.append(item)
         return dict(repos=enabled)
+
+    @staticmethod
+    def generate(repofn):
+        """
+        Generate the report content.
+        :param repofn: The .repo file basename used to filter the report.
+        :type repofn: str
+        :return: The report content
+        :rtype: dict
+        """
+        yb = Yum()
+        try:
+            return dict(enabled_repos=EnabledReport.find_enabled(yb, repofn))
+        finally:
+            yb.close()
+
+    def __init__(self, repofn):
+        """
+        :param repofn: The .repo file basename used to
+            filter the report.
+        :type repofn: str
+        """
+        self.content = EnabledReport.generate(repofn)
 
     def __str__(self):
         return str(self.content)
