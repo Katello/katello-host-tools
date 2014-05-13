@@ -216,13 +216,12 @@ class EnabledReport:
         finally:
             yb.close()
 
-    def __init__(self, repofn):
+    def __init__(self, path):
         """
-        :param repofn: The .repo file basename used to
-            filter the report.
-        :type repofn: str
+        :param path: A .repo file path used to filter the report.
+        :type path: str
         """
-        self.content = EnabledReport.generate(repofn)
+        self.content = EnabledReport.generate(os.path.basename(path))
 
     def __str__(self):
         return str(self.content)

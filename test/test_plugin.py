@@ -306,7 +306,7 @@ class TestEnabledReport(PluginTest):
         report = self.plugin.EnabledReport(path)
 
         # validation
-        fake_generate.assert_called_with(path)
+        fake_generate.assert_called_with(os.path.basename(path))
         self.assertEqual(report.content, content)
 
     @patch('katello.agent.katelloplugin.EnabledReport.generate')
