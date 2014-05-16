@@ -1,5 +1,5 @@
 Name: katello-agent
-Version: 1.5.1
+Version: 1.5.2
 Release: 1%{?dist}
 Summary: The Katello Agent
 Group:   Development/Languages
@@ -48,6 +48,12 @@ LC_ALL=C service goferd status | grep 'is running' && service goferd restart
 %doc LICENSE
 
 %changelog
+* Fri May 16 2014 Justin Sherrill <jsherril@redhat.com> 1.5.2-1
+- Ensure EnabledReport filters by basename. (jortel@redhat.com)
+- agent requires gofer >= 1.0.10. (jortel@redhat.com)
+- add unit tests. (jortel@redhat.com)
+- Refit agent to work with gofer 1.0+ and pulp 2.4+. (jortel@redhat.com)
+
 * Fri Oct 11 2013 Partha Aji <paji@redhat.com> 1.5.1-1
 - Bumping package versions for 1.5 (paji@redhat.com)
 
