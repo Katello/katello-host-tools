@@ -135,6 +135,28 @@ class TestSendEnabledReport(PluginTest):
         self.assertFalse(fake_report.called)
         self.assertFalse(fake_uep.called)
 
+    @patch('katello.agent.katelloplugin.UEP')
+    @patch('katello.agent.katelloplugin.EnabledReport')
+    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
+    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
+    def test_send_and_failed(self, fake_valid, fake_read, fake_report, fake_uep):
+        path = '/tmp/path/test'
+        consumer_id = '1234'
+        fake_certificate = Mock()
+        fake_certificate.getConsumerId.return_value = consumer_id
+        fake_valid.return_value = True
+        fake_read.return_value = fake_certificate
+        fake_uep().report_enabled.side_effect = ValueError()
+
+        # test
+        self.plugin.send_enabled_report(path)
+
+        # validation
+        fake_valid.assert_called_with()
+        fake_report.assert_called_with(path)
+        fake_certificate.getConsumerId.assert_called_with()
+        fake_uep().report_enabled.assert_called_with(consumer_id, fake_report().content)
+
 
 class TestSetupPlugin(PluginTest):
 
