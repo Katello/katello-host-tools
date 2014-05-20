@@ -94,10 +94,13 @@ def send_enabled_report(path=REPOSITORY_PATH):
     if not ConsumerIdentity.existsAndValid():
         # not registered
         return
-    uep = UEP()
-    certificate = ConsumerIdentity.read()
-    report = EnabledReport(path)
-    uep.report_enabled(certificate.getConsumerId(), report.content)
+    try:
+        uep = UEP()
+        certificate = ConsumerIdentity.read()
+        report = EnabledReport(path)
+        uep.report_enabled(certificate.getConsumerId(), report.content)
+    except Exception, e:
+        log.error('send enabled report failed: %s', str(e))
 
 
 def setup_plugin():
