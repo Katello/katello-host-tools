@@ -37,6 +37,15 @@ mkdir -p %{buildroot}/%{_prefix}/lib/gofer/plugins
 cp etc/gofer/plugins/katelloplugin.conf %{buildroot}/%{_sysconfdir}/gofer/plugins
 cp src/katello/agent/katelloplugin.py %{buildroot}/%{_prefix}/lib/gofer/plugins
 
+mkdir -p %{buildroot}/%{_prefix}/lib/yum-plugins
+cp src/yum-plugins/package_upload.py %{buildroot}/%{_prefix}/lib/yum-plugins
+
+mkdir -p %{buildroot}/%{_sysconfdir}/yum/pluginconf.d/
+cp etc/yum/pluginconf.d/package_upload.conf %{buildroot}/%{_sysconfdir}/yum/pluginconf.d/package_upload.conf
+
+mkdir -p %{buildroot}%{_sbindir}
+cp bin/katello-package-upload %{buildroot}%{_sbindir}/katello-package-upload
+
 %clean
 rm -rf %{buildroot}
 
@@ -46,6 +55,10 @@ LC_ALL=C service goferd status | grep 'is running' && service goferd restart
 %files
 %config(noreplace) %{_sysconfdir}/gofer/plugins/katelloplugin.conf
 %{_prefix}/lib/gofer/plugins/katelloplugin.*
+%{_sysconfdir}/yum/pluginconf.d/package_upload.conf
+%attr(750, root, root) %{_sbindir}/katello-package-upload
+%{_prefix}/lib/yum-plugins
+
 %doc LICENSE
 
 %changelog
