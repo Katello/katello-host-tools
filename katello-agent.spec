@@ -49,6 +49,10 @@ cp bin/katello-package-upload %{buildroot}%{_sbindir}/katello-package-upload
 %clean
 rm -rf %{buildroot}
 
+%post
+chkconfig goferd on
+service goferd restart
+
 %postun
 LC_ALL=C service goferd status | grep 'is running' && service goferd restart
 
