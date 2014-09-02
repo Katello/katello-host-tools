@@ -54,7 +54,11 @@ chkconfig goferd on
 service goferd restart
 
 %postun
-LC_ALL=C service goferd status | grep 'is running' && service goferd restart
+%if 0%{?fedora} > 18 || 0%{?rhel} > 6
+    LC_ALL=C systemctl status goferd | grep 'active (running)' && systemctl restart goferd
+%else
+    LC_ALL=C service goferd status | grep 'is running' && service goferd restart
+%endif
 
 %files
 %config(noreplace) %{_sysconfdir}/gofer/plugins/katelloplugin.conf
