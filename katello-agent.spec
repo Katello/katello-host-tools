@@ -55,9 +55,13 @@ service goferd restart
 
 %postun
 %if 0%{?fedora} > 18 || 0%{?rhel} > 6
-    LC_ALL=C systemctl status goferd | grep 'active (running)' && systemctl restart goferd
+    if systemctl status goferd | grep 'active (running)'; then
+        systemctl restart goferd
+    fi
 %else
-    LC_ALL=C service goferd status | grep 'is running' && service goferd restart
+    if service goferd status | grep 'is running'; then
+        service goferd restart
+    fi
 %endif
 
 %files
