@@ -74,6 +74,17 @@ service goferd restart
 %doc LICENSE
 
 %changelog
+* Fri Sep 12 2014 Justin Sherrill <jsherril@redhat.com> 2.0.0-1
+- bumping version to 2.0 (jsherril@redhat.com)
+- refs #7330 / BZ 1136393 - %%postun - only restart goferd when it is running
+  (bbuckingham@redhat.com)
+- fixes #7330 / BZ 1136393 - katello-agent - update %%postun to support systemd
+  (bbuckingham@redhat.com)
+- refs #5271 - update for el7 builds (jsherril@redhat.com)
+- fixes #6103 - updating package profile after every yum action
+  (jsherril@redhat.com)
+- fixes #5095 - starting goferd by default (jsherril@redhat.com)
+
 * Tue May 20 2014 Justin Sherrill <jsherril@redhat.com> 1.5.3-1
   (jlsherrill@gmail.com)
 - Fix agent requirements for pulp 2.4; catch and report errors sending the
