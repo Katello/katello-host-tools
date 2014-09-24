@@ -30,7 +30,7 @@ from gofer.pmon import PathMonitor
 from gofer.agent.rmi import Context
 from gofer.config import Config
 
-from subscription_manager.certlib import ConsumerIdentity
+from subscription_manager.identity import ConsumerIdentity
 from rhsm.connection import UEPConnection
 
 from pulp.agent.lib.dispatcher import Dispatcher
