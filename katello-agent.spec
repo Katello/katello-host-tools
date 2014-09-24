@@ -1,5 +1,5 @@
 Name: katello-agent
-Version: 2.0.0
+Version: 2.0.1
 Release: 1%{?dist}
 Summary: The Katello Agent
 Group:   Development/Languages
@@ -74,6 +74,9 @@ service goferd restart
 %doc LICENSE
 
 %changelog
+* Wed Sep 24 2014 Eric D. Helms <ericdhelms@gmail.com> 2.0.1-1
+- Fixes #7553: Update ConsumerIdentity location. (ericdhelms@gmail.com)
+
 * Fri Sep 12 2014 Justin Sherrill <jsherril@redhat.com> 2.0.0-1
 - bumping version to 2.0 (jsherril@redhat.com)
 - refs #7330 / BZ 1136393 - %%postun - only restart goferd when it is running
