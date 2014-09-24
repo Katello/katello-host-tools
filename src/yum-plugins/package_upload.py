@@ -17,7 +17,7 @@ sys.path.append('/usr/share/rhsm')
 from yum.plugins import PluginYumExit, TYPE_CORE, TYPE_INTERACTIVE
 
 from subscription_manager import certmgr
-from subscription_manager.certlib import ConsumerIdentity
+from subscription_manager.identity import ConsumerIdentity
 from rhsm import connection
 
 try:
