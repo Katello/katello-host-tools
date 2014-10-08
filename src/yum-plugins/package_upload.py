@@ -16,7 +16,13 @@ sys.path.append('/usr/share/rhsm')
 
 from yum.plugins import PluginYumExit, TYPE_CORE, TYPE_INTERACTIVE
 
-from subscription_manager import certmgr
+from subscription_manager import identity
+
+try:
+  from subscription_manager import action_client
+except ImportError:
+  from subscription_manager import certmgr
+
 from subscription_manager.identity import ConsumerIdentity
 from rhsm import connection
 
@@ -32,8 +38,17 @@ plugin_type = (TYPE_CORE, TYPE_INTERACTIVE)
 def upload_package_profile():
     uep = connection.UEPConnection(cert_file=ConsumerIdentity.certpath(),
                                    key_file=ConsumerIdentity.keypath())
-    mgr = certmgr.CertManager(uep=uep)
-    mgr.profilelib._do_update()
+    get_manager().profilelib._do_update()
+
+def get_manager():
+    if 'subscription_manager.action_client' in sys.modules:
+        mgr = action_client.ActionClient()
+    else:
+        # for compatability with subscription-manager > =1.13
+        uep = connection.UEPConnection(cert_file=ConsumerIdentity.certpath(),
+                                        key_file=ConsumerIdentity.keypath())
+        mgr = certmgr.CertManager(uep=uep)
+    return mgr
 
 def posttrans_hook(conduit):
     conduit.info(2, "Uploading Package Profile")
