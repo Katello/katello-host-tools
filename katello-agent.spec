@@ -1,5 +1,5 @@
 Name: katello-agent
-Version: 2.1.1
+Version: 2.1.2
 Release: 1%{?dist}
 Summary: The Katello Agent
 Group:   Development/Languages
@@ -74,6 +74,10 @@ service goferd restart
 %doc LICENSE
 
 %changelog
+* Fri Oct 10 2014 Justin Sherrill <jsherril@redhat.com> 2.1.2-1
+- fixes #7815 - fixing package upload feature with new sub-man
+  (jsherril@redhat.com)
+
 * Wed Sep 24 2014 Eric D. Helms <ericdhelms@gmail.com> 2.1.1-1
 - Fixes #7553: Update ConsumerIdentity location. (ericdhelms@gmail.com)
 
