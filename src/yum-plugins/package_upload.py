@@ -16,14 +16,16 @@ sys.path.append('/usr/share/rhsm')
 
 from yum.plugins import PluginYumExit, TYPE_CORE, TYPE_INTERACTIVE
 
-from subscription_manager import identity
-
 try:
   from subscription_manager import action_client
 except ImportError:
   from subscription_manager import certmgr
 
-from subscription_manager.identity import ConsumerIdentity
+try:
+  from subscription_manager.identity import ConsumerIdentity
+except ImportError:
+  from subscription_manager.certlib import ConsumerIdentity
+
 from rhsm import connection
 
 try:
