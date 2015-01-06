@@ -1,5 +1,5 @@
 Name: katello-agent
-Version: 2.1.2
+Version: 2.1.3
 Release: 1%{?dist}
 Summary: The Katello Agent
 Group:   Development/Languages
@@ -74,6 +74,11 @@ service goferd restart
 %doc LICENSE
 
 %changelog
+* Tue Jan 06 2015 Justin Sherrill <jsherril@redhat.com> 2.1.3-1
+- Bumping for 2.1 release (daviddavis@redhat.com)
+- fixes #7815 - fixing katello-agent for older subscription-managers
+  (jsherril@redhat.com)
+
 * Fri Oct 10 2014 Justin Sherrill <jsherril@redhat.com> 2.1.2-1
 - fixes #7815 - fixing package upload feature with new sub-man
   (jsherril@redhat.com)
