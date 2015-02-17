@@ -71,7 +71,7 @@ def bundle(certificate):
         return path
     finally:
         fp.close()
-  
+
 
 def registration_changed(path):
     """
@@ -117,10 +117,11 @@ def setup_plugin():
     cfg = plugin.cfg()
     rhsm_conf = Config(RHSM_CONFIG_PATH)
     certificate = ConsumerIdentity.read()
+    cfg.messaging.cacert = rhsm_conf['rhsm']['repo_ca_cert'] % rhsm_conf['rhsm']
     cfg.messaging.url = 'ssl://%s:5671' % rhsm_conf['server']['hostname']
     cfg.messaging.uuid = 'pulp.agent.%s' % certificate.getConsumerId()
     bundle(certificate)
-    
+
 
 @initializer
 def init_plugin():
@@ -137,7 +138,7 @@ def init_plugin():
     path_monitor.add(path, registration_changed)
     path_monitor.add(REPOSITORY_PATH, send_enabled_report)
     path_monitor.start()
-    
+
 
 class Conduit(HandlerConduit):
     """
