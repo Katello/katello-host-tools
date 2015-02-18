@@ -165,6 +165,8 @@ class TestSetupPlugin(PluginTest):
     @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
     @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
     def test_setup_when_registered(self, fake_valid, fake_read, fake_conf, fake_bundle):
+        ca_cert_dir = '/etc/rhsm/ca/'
+        ca_cert = '%(ca_cert_dir)skatello-server-ca.pem'
         consumer_id = '1234'
         host = 'redhat.com'
         fake_valid.return_value = True
@@ -172,7 +174,8 @@ class TestSetupPlugin(PluginTest):
         fake_certificate.getConsumerId.return_value = consumer_id
         fake_valid.return_value = True
         fake_read.return_value = fake_certificate
-        fake_conf.return_value = {'server': {'hostname': host}}
+        fake_conf.return_value = {'server': {'hostname': host}, 'rhsm': {'repo_ca_cert': ca_cert,
+            'ca_cert_dir': ca_cert_dir}}
 
         # test
         self.plugin.setup_plugin()
@@ -182,6 +185,7 @@ class TestSetupPlugin(PluginTest):
         fake_read.assert_called_with()
         fake_bundle.assert_called_with(fake_certificate)
         plugin_cfg = self.plugin.plugin.cfg()
+        self.assertEqual(plugin_cfg.messaging.cacert, '/etc/rhsm/ca/katello-server-ca.pem')
         self.assertEqual(plugin_cfg.messaging.url, 'ssl://%s:5671' % host)
         self.assertEqual(plugin_cfg.messaging.uuid, 'pulp.agent.%s' % consumer_id)
 
