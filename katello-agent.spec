@@ -1,5 +1,5 @@
 Name: katello-agent
-Version: 2.1.3
+Version: 2.1.4
 Release: 1%{?dist}
 Summary: The Katello Agent
 Group:   Development/Languages
@@ -74,6 +74,9 @@ service goferd restart
 %doc LICENSE
 
 %changelog
+* Wed Feb 18 2015 Justin Sherrill <jsherril@redhat.com> 2.1.4-1
+- fixes #9403 - use correct certificate location (stbenjam@redhat.com)
+
 * Tue Jan 06 2015 Justin Sherrill <jsherril@redhat.com> 2.1.3-1
 - Bumping for 2.1 release (daviddavis@redhat.com)
 - fixes #7815 - fixing katello-agent for older subscription-managers
