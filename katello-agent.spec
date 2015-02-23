@@ -11,10 +11,10 @@ BuildArch: noarch
 BuildRequires: python2-devel
 BuildRequires: python-setuptools
 BuildRequires: rpm-python
-Requires: gofer >= 2.4
-Requires: python-gofer-qpid >= 2.4
-Requires: python-pulp-agent-lib >= 2.4.0
-Requires: pulp-rpm-handlers >= 2.4.0
+Requires: gofer >= 2.5
+Requires: python-gofer-proton >= 2.5
+Requires: python-pulp-agent-lib >= 2.6
+Requires: pulp-rpm-handlers >= 2.6
 Requires: subscription-manager
 
 %description

@@ -13,9 +13,14 @@
 
 import os
 import sys
+import httplib
+
+from threading import Thread
 from unittest import TestCase
 
 from mock import patch, Mock
+
+from rhsm.connection import RemoteServerException
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../src'))
 
@@ -39,6 +44,7 @@ class PluginTest(TestCase):
         plugin.plugin = Mock()
         plugin.plugin.cfg = plugin_cfg
         plugin.path_monitor = Mock()
+        plugin.registered = True
         return plugin
 
     def setUp(self):
@@ -66,163 +72,129 @@ class TestBundle(PluginTest):
         fake_fp.close.assert_called_with()
 
 
-class TestRegistrationChanged(PluginTest):
+class TestCertificateChanged(PluginTest):
 
-    @patch('katello.agent.katelloplugin.setup_plugin')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
-    def test_registered(self, fake_valid, fake_setup):
-        fake_valid.return_value = True
+    @patch('katello.agent.katelloplugin.Attach')
+    def test_registered(self, fake_attach):
 
         # test
-        self.plugin.registration_changed('')
+        self.plugin.certificate_changed('')
 
         # validation
-        fake_valid.assert_called_with()
-        fake_setup.assert_called_with()
-        self.plugin.plugin.attach.assert_called_with()
-
-    @patch('katello.agent.katelloplugin.setup_plugin')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
-    def test_unregistered(self, fake_valid, fake_setup):
-        fake_valid.return_value = False
-
-        # test
-        self.plugin.registration_changed('')
-
-        # validation
-        fake_valid.assert_called_with()
-        self.assertFalse(fake_setup.called)
-        self.assertFalse(self.plugin.plugin.attach.called)
-        self.plugin.plugin.detach.assert_called_with()
+        fake_attach.assert_called_with()
+        fake_attach = fake_attach.return_value
+        fake_attach.start.assert_called_with()
+        fake_attach.join.assert_called_with()
 
 
 class TestSendEnabledReport(PluginTest):
 
-    @patch('katello.agent.katelloplugin.UEP')
     @patch('katello.agent.katelloplugin.EnabledReport')
     @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
-    def test_send_when_registered(self, fake_valid, fake_read, fake_report, fake_uep):
+    @patch('katello.agent.katelloplugin.UEP.report_enabled')
+    def test_send_when_registered(self, fake_report_enabled, fake_read, fake_report):
         path = '/tmp/path/test'
         consumer_id = '1234'
         fake_certificate = Mock()
         fake_certificate.getConsumerId.return_value = consumer_id
-        fake_valid.return_value = True
         fake_read.return_value = fake_certificate
 
         # test
         self.plugin.send_enabled_report(path)
 
         # validation
-        fake_valid.assert_called_with()
         fake_report.assert_called_with(path)
         fake_certificate.getConsumerId.assert_called_with()
-        fake_uep().report_enabled.assert_called_with(consumer_id, fake_report().content)
+        fake_report_enabled.assert_called_with(consumer_id, fake_report().content)
 
-    @patch('katello.agent.katelloplugin.UEP')
     @patch('katello.agent.katelloplugin.EnabledReport')
     @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
-    def test_send_when_not_registered(self, fake_valid, fake_read, fake_report, fake_uep):
-        fake_valid.return_value = False
+    @patch('katello.agent.katelloplugin.UEP.report_enabled')
+    def test_send_when_unregistered(self, fake_report_enabled, fake_read, fake_report):
+        path = '/tmp/path/test'
 
         # test
-        self.plugin.send_enabled_report('')
+        self.plugin.registered = False
+        self.plugin.send_enabled_report(path)
 
         # validation
-        fake_valid.assert_called_with()
         self.assertFalse(fake_read.called)
         self.assertFalse(fake_report.called)
-        self.assertFalse(fake_uep.called)
+        self.assertFalse(fake_report_enabled.called)
 
-    @patch('katello.agent.katelloplugin.UEP')
     @patch('katello.agent.katelloplugin.EnabledReport')
     @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
-    def test_send_and_failed(self, fake_valid, fake_read, fake_report, fake_uep):
+    @patch('katello.agent.katelloplugin.UEP.report_enabled')
+    def test_send_failed(self, fake_report_enabled, fake_read, fake_report):
         path = '/tmp/path/test'
         consumer_id = '1234'
         fake_certificate = Mock()
         fake_certificate.getConsumerId.return_value = consumer_id
-        fake_valid.return_value = True
         fake_read.return_value = fake_certificate
-        fake_uep().report_enabled.side_effect = ValueError()
+        fake_report_enabled.side_effect = ValueError
 
         # test
         self.plugin.send_enabled_report(path)
 
         # validation
-        fake_valid.assert_called_with()
         fake_report.assert_called_with(path)
         fake_certificate.getConsumerId.assert_called_with()
-        fake_uep().report_enabled.assert_called_with(consumer_id, fake_report().content)
+        fake_report_enabled.assert_called_with(consumer_id, fake_report().content)
 
 
-class TestSetupPlugin(PluginTest):
+class TestUpdateSettings(PluginTest):
 
     @patch('katello.agent.katelloplugin.bundle')
     @patch('katello.agent.katelloplugin.Config')
     @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
-    def test_setup_when_registered(self, fake_valid, fake_read, fake_conf, fake_bundle):
-        ca_cert_dir = '/etc/rhsm/ca/'
-        ca_cert = '%(ca_cert_dir)skatello-server-ca.pem'
+    def test_call(self, fake_read, fake_conf, fake_bundle):
         consumer_id = '1234'
         host = 'redhat.com'
-        fake_valid.return_value = True
+        ca_cert_dir = '/etc/rhsm/ca/'
+        ca_cert = '%(ca_cert_dir)skatello-server-ca.pem'
         fake_certificate = Mock()
         fake_certificate.getConsumerId.return_value = consumer_id
-        fake_valid.return_value = True
         fake_read.return_value = fake_certificate
-        fake_conf.return_value = {'server': {'hostname': host}, 'rhsm': {'repo_ca_cert': ca_cert,
-            'ca_cert_dir': ca_cert_dir}}
+        fake_conf.return_value = {
+            'server': {
+                'hostname': host
+            },
+            'rhsm': {
+                'repo_ca_cert': ca_cert,
+                'ca_cert_dir': ca_cert_dir
+            }
+        }
 
         # test
-        self.plugin.setup_plugin()
+        self.plugin.update_settings()
 
         # validation
-        fake_valid.assert_called_with()
         fake_read.assert_called_with()
         fake_bundle.assert_called_with(fake_certificate)
         plugin_cfg = self.plugin.plugin.cfg
         self.assertEqual(plugin_cfg.messaging.cacert, '/etc/rhsm/ca/katello-server-ca.pem')
-        self.assertEqual(plugin_cfg.messaging.url, 'amqps://%s' % host)
+        self.assertEqual(plugin_cfg.messaging.url, 'proton+amqps://%s' % host)
         self.assertEqual(plugin_cfg.messaging.uuid, 'pulp.agent.%s' % consumer_id)
-
-    @patch('katello.agent.katelloplugin.bundle')
-    @patch('katello.agent.katelloplugin.Config')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
-    def test_setup_when_not_registered(self, fake_valid, fake_read, fake_conf, fake_bundle):
-        fake_valid.return_value = False
-
-        # test
-        self.plugin.setup_plugin()
-
-        # validation
-        fake_valid.assert_called_with()
-        self.assertFalse(fake_read.called)
-        self.assertFalse(fake_conf.called)
-        self.assertFalse(fake_bundle.called)
 
 
 class TestInitializer(PluginTest):
 
     @patch('katello.agent.katelloplugin.path_monitor')
     @patch('katello.agent.katelloplugin.ConsumerIdentity.certpath')
-    @patch('katello.agent.katelloplugin.send_enabled_report')
-    @patch('katello.agent.katelloplugin.setup_plugin')
-    def test_init(self, fake_setup, fake_send, fake_path, fake_pmon):
+    @patch('katello.agent.katelloplugin.Attach')
+    def test_init(self, fake_attach, fake_path, fake_pmon):
+
         # test
         self.plugin.init_plugin()
 
         # validation
-        fake_setup.assert_called_with()
-        fake_send.assert_called_with()
         fake_path.assert_called_with()
-        fake_pmon.add.assert_any_call(fake_path(), self.plugin.registration_changed)
+        fake_pmon.add.assert_any_call(fake_path(), self.plugin.certificate_changed)
         fake_pmon.add.assert_any_call(self.plugin.REPOSITORY_PATH, self.plugin.send_enabled_report)
         fake_pmon.start.assert_called_with()
+        fake_attach.assert_called_with()
+        fake_attach = fake_attach.return_value
+        fake_attach.start.assert_called_with()
 
 
 class TestConduit(PluginTest):
@@ -415,6 +387,84 @@ class TestUEP(PluginTest):
         uep.conn.request_put.assert_called_with(method, report)
 
 
+class TestValidateRegistration(PluginTest):
+
+    @patch('katello.agent.katelloplugin.UEP.getConsumer')
+    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
+    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
+    def test_validate_registration(self, valid, read, get_consumer):
+        consumer_id = '1234'
+        valid.return_value = True
+        read.return_value.getConsumerId.return_value = consumer_id
+
+        # test
+        self.plugin.validate_registration()
+
+        # validation
+        get_consumer.assert_called_with(consumer_id)
+        self.assertTrue(self.plugin.registered)
+
+    @patch('katello.agent.katelloplugin.UEP.getConsumer')
+    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
+    def test_validate_registration_no_certificate(self, valid, get_consumer):
+        valid.return_value = False
+
+        # test
+        self.plugin.validate_registration()
+
+        # validation
+        self.assertFalse(get_consumer.called)
+        self.assertFalse(self.plugin.registered)
+
+    @patch('katello.agent.katelloplugin.UEP.getConsumer')
+    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
+    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
+    def test_validate_registration_not_confirmed(self, valid, read, get_consumer):
+        consumer_id = '1234'
+        valid.return_value = True
+        read.return_value.getConsumerId.return_value = consumer_id
+        get_consumer.side_effect = RemoteServerException(httplib.NOT_FOUND)
+
+        # test
+        self.plugin.validate_registration()
+
+        # validation
+        get_consumer.assert_called_with(consumer_id)
+        self.assertFalse(self.plugin.registered)
+
+    @patch('katello.agent.katelloplugin.UEP.getConsumer')
+    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
+    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
+    def test_validate_registration_failed(self, valid, read, get_consumer):
+        consumer_id = '1234'
+        valid.return_value = True
+        read.return_value.getConsumerId.return_value = consumer_id
+        get_consumer.side_effect = RemoteServerException(httplib.BAD_REQUEST)
+
+        # test
+        self.assertRaises(RemoteServerException, self.plugin.validate_registration)
+
+        # validation
+        get_consumer.assert_called_with(consumer_id)
+        self.assertFalse(self.plugin.registered)
+
+    @patch('katello.agent.katelloplugin.UEP.getConsumer')
+    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
+    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
+    def test_validate_registration_exception(self, valid, read, get_consumer):
+        consumer_id = '1234'
+        valid.return_value = True
+        read.return_value.getConsumerId.return_value = consumer_id
+        get_consumer.side_effect = ValueError
+
+        # test
+        self.assertRaises(ValueError, self.plugin.validate_registration)
+
+        # validation
+        get_consumer.assert_called_with(consumer_id)
+        self.assertFalse(self.plugin.registered)
+
+
 class TestContent(PluginTest):
 
     @patch('katello.agent.katelloplugin.Conduit')
@@ -467,3 +517,56 @@ class TestContent(PluginTest):
         # validation
         mock_dispatcher().uninstall.assert_called_with(mock_conduit(), units, options)
         self.assertEqual(report, _report.dict())
+
+
+class TestAttach(PluginTest):
+
+    def test_init(self):
+        attach = self.plugin.Attach()
+        self.assertTrue(isinstance(attach, Thread))
+        self.assertTrue(attach.daemon)
+
+    @patch('katello.agent.katelloplugin.update_settings')
+    @patch('katello.agent.katelloplugin.send_enabled_report')
+    @patch('katello.agent.katelloplugin.validate_registration')
+    def test_run(self, validate, send_enabled_report, update_settings):
+
+        # test
+        attach = self.plugin.Attach()
+        attach.run()
+
+        # validation
+        validate.assert_called_with()
+        update_settings.assert_called_with()
+        send_enabled_report.assert_called_with()
+        self.plugin.plugin.attach.assert_called_with()
+
+    @patch('katello.agent.katelloplugin.update_settings')
+    @patch('katello.agent.katelloplugin.validate_registration')
+    def test_run_not_registered(self, validate, update_settings):
+        self.plugin.registered = False
+
+        # test
+        attach = self.plugin.Attach()
+        attach.run()
+
+        # validation
+        validate.assert_called_with()
+        self.assertFalse(update_settings.called)
+        self.plugin.plugin.detach.assert_called_with()
+
+    @patch('katello.agent.katelloplugin.sleep')
+    @patch('katello.agent.katelloplugin.update_settings')
+    @patch('katello.agent.katelloplugin.validate_registration')
+    def test_run_validate_failed(self, validate, update_settings, sleep):
+        validate.side_effect = [ValueError, None]
+
+        # test
+        attach = self.plugin.Attach()
+        attach.run()
+
+        # validation
+        validate.assert_called_with()
+        sleep.assert_called_once_with(60)
+        update_settings.assert_called_with()
+        self.plugin.plugin.attach.assert_called_with()

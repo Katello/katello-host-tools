@@ -12,30 +12,33 @@
 #
 
 """
-The katello agent plugin.
+The katello virtual agent.
 Provides content management APIs for pulp within the RHSM environment.
 """
 
 import os
 import sys
+import httplib
 
 sys.path.append('/usr/share/rhsm')
 
 from yum import YumBase
+from threading import Thread
+from time import sleep
 from logging import getLogger, Logger
 
-from gofer.decorators import *
+from gofer.decorators import initializer, remote
 from gofer.agent.plugin import Plugin
 from gofer.pmon import PathMonitor
 from gofer.agent.rmi import Context
 from gofer.config import Config
 
 try:
-  from subscription_manager.identity import ConsumerIdentity
+    from subscription_manager.identity import ConsumerIdentity
 except ImportError:
-  from subscription_manager.certlib import ConsumerIdentity
+    from subscription_manager.certlib import ConsumerIdentity
 
-from rhsm.connection import UEPConnection
+from rhsm.connection import UEPConnection, RemoteServerException
 
 from pulp.agent.lib.dispatcher import Dispatcher
 from pulp.agent.lib.conduit import Conduit as HandlerConduit
@@ -47,12 +50,33 @@ plugin = Plugin.find(__name__)
 # Path monitoring
 path_monitor = PathMonitor()
 
+# Track registration status
+registered = False
+
+
 log = getLogger(__name__)
 
 
 RHSM_CONFIG_PATH = '/etc/rhsm/rhsm.conf'
 
 REPOSITORY_PATH = '/etc/yum.repos.d/redhat.repo'
+
+
+@initializer
+def init_plugin():
+    """
+    Initialize the plugin.
+    Called (once) immediately after the plugin is loaded.
+     - setup path monitoring.
+     - setup plugin configuration.
+     - send an initial repository enabled report.
+    """
+    path = ConsumerIdentity.certpath()
+    path_monitor.add(path, certificate_changed)
+    path_monitor.add(REPOSITORY_PATH, send_enabled_report)
+    path_monitor.start()
+    attach = Attach()
+    attach.start()
 
 
 def bundle(certificate):
@@ -73,20 +97,18 @@ def bundle(certificate):
         fp.close()
 
 
-def registration_changed(path):
+def certificate_changed(path):
     """
-    Notification that a change in registration has been detected.
+    A certificate change has been detected.
     On registration: setup the plugin; attach to the message broker.
     On un-registration: detach from the message broker.
     :param path: The path to the file that changed.
     :type path: str
     """
     log.info('changed: %s', path)
-    if ConsumerIdentity.existsAndValid():
-        setup_plugin()
-        plugin.attach()
-    else:
-        plugin.detach()
+    attach = Attach()
+    attach.start()
+    attach.join()
 
 
 def send_enabled_report(path=REPOSITORY_PATH):
@@ -95,8 +117,7 @@ def send_enabled_report(path=REPOSITORY_PATH):
     :param path: The path to a repository file.
     :type path: str
     """
-    if not ConsumerIdentity.existsAndValid():
-        # not registered
+    if not registered:
         return
     try:
         uep = UEP()
@@ -107,36 +128,74 @@ def send_enabled_report(path=REPOSITORY_PATH):
         log.error('send enabled report failed: %s', str(e))
 
 
-def setup_plugin():
+def update_settings():
     """
-    Setup the plugin based on registration status using the RHSM configuration.
+    Setup the plugin based on the RHSM configuration.
     """
-    if not ConsumerIdentity.existsAndValid():
-        # not registered
-        return
     rhsm_conf = Config(RHSM_CONFIG_PATH)
     certificate = ConsumerIdentity.read()
     plugin.cfg.messaging.cacert = rhsm_conf['rhsm']['repo_ca_cert'] % rhsm_conf['rhsm']
-    plugin.cfg.messaging.url = 'amqps://%s' % rhsm_conf['server']['hostname']
+    plugin.cfg.messaging.url = 'proton+amqps://%s' % rhsm_conf['server']['hostname']
     plugin.cfg.messaging.uuid = 'pulp.agent.%s' % certificate.getConsumerId()
     bundle(certificate)
 
 
-@initializer
-def init_plugin():
+def validate_registration():
     """
-    Initialize the plugin.
-    Called (once) immediately after the plugin is loaded.
-     - setup plugin configuration.
-     - send an initial repository enabled report.
-     - setup path monitoring.
+    Validate consumer registration by making a REST call
+    to the server.  Updates the global 'registered' variable.
     """
-    setup_plugin()
-    send_enabled_report()
-    path = ConsumerIdentity.certpath()
-    path_monitor.add(path, registration_changed)
-    path_monitor.add(REPOSITORY_PATH, send_enabled_report)
-    path_monitor.start()
+    global registered
+    registered = False
+
+    if ConsumerIdentity.existsAndValid():
+        consumer = ConsumerIdentity.read()
+        consumer_id = consumer.getConsumerId()
+    else:
+        return
+
+    try:
+        uep = UEP()
+        consumer = uep.getConsumer(consumer_id)
+        registered = (consumer is not None)
+    except RemoteServerException, e:
+        if e.code != httplib.NOT_FOUND:
+            log.warn(str(e))
+            raise
+    except Exception, e:
+        log.exception(str(e))
+        raise
+
+
+class Attach(Thread):
+    """
+    This thread (task) persistently:
+      - validates the registration status
+      - if registered, updates the plugin settings and attach.
+      - if not registered, detach the plugin.
+    The reason for doing this in a thread is that we don't
+    want to block in the initializer.
+    """
+
+    def __init__(self):
+        super(Attach, self).__init__()
+        self.setDaemon(True)
+
+    def run(self):
+        while True:
+            try:
+                validate_registration()
+                if registered:
+                    send_enabled_report()
+                    update_settings()
+                    plugin.attach()
+                else:
+                    plugin.detach()
+                # DONE
+                break
+            except Exception, e:
+                log.warn(str(e))
+                sleep(60)
 
 
 class Conduit(HandlerConduit):
@@ -174,7 +233,7 @@ class Conduit(HandlerConduit):
         return context.cancelled()
 
 
-class EnabledReport:
+class EnabledReport(object):
     """
     Represents the enabled repos report.
     @ivar content: The report content <dict>:
@@ -286,7 +345,7 @@ class UEP(UEPConnection):
 # --- API --------------------------------------------------------------------
 
 
-class Content:
+class Content(object):
     """
     Pulp Content Management.
     """
