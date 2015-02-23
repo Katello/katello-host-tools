@@ -114,12 +114,11 @@ def setup_plugin():
     if not ConsumerIdentity.existsAndValid():
         # not registered
         return
-    cfg = plugin.cfg()
     rhsm_conf = Config(RHSM_CONFIG_PATH)
     certificate = ConsumerIdentity.read()
-    cfg.messaging.cacert = rhsm_conf['rhsm']['repo_ca_cert'] % rhsm_conf['rhsm']
-    cfg.messaging.url = 'ssl://%s:5671' % rhsm_conf['server']['hostname']
-    cfg.messaging.uuid = 'pulp.agent.%s' % certificate.getConsumerId()
+    plugin.cfg.messaging.cacert = rhsm_conf['rhsm']['repo_ca_cert'] % rhsm_conf['rhsm']
+    plugin.cfg.messaging.url = 'amqps://%s' % rhsm_conf['server']['hostname']
+    plugin.cfg.messaging.uuid = 'pulp.agent.%s' % certificate.getConsumerId()
     bundle(certificate)
 
 

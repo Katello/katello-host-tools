@@ -37,7 +37,7 @@ class PluginTest(TestCase):
         plugin_cfg = Mock()
         plugin_cfg.messaging = Mock()
         plugin.plugin = Mock()
-        plugin.plugin.cfg.return_value = plugin_cfg
+        plugin.plugin.cfg = plugin_cfg
         plugin.path_monitor = Mock()
         return plugin
 
@@ -184,9 +184,9 @@ class TestSetupPlugin(PluginTest):
         fake_valid.assert_called_with()
         fake_read.assert_called_with()
         fake_bundle.assert_called_with(fake_certificate)
-        plugin_cfg = self.plugin.plugin.cfg()
+        plugin_cfg = self.plugin.plugin.cfg
         self.assertEqual(plugin_cfg.messaging.cacert, '/etc/rhsm/ca/katello-server-ca.pem')
-        self.assertEqual(plugin_cfg.messaging.url, 'ssl://%s:5671' % host)
+        self.assertEqual(plugin_cfg.messaging.url, 'amqps://%s' % host)
         self.assertEqual(plugin_cfg.messaging.uuid, 'pulp.agent.%s' % consumer_id)
 
     @patch('katello.agent.katelloplugin.bundle')
