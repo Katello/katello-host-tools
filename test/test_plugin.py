@@ -202,7 +202,7 @@ class TestUpdateSettings(PluginTest):
         fake_bundle.assert_called_with(fake_certificate)
         plugin_cfg = self.plugin.plugin.cfg
         self.assertEqual(plugin_cfg.messaging.cacert, '/etc/rhsm/ca/katello-server-ca.pem')
-        self.assertEqual(plugin_cfg.messaging.url, 'proton+amqps://%s' % host)
+        self.assertEqual(plugin_cfg.messaging.url, 'proton+amqps://%s:5647' % host)
         self.assertEqual(plugin_cfg.messaging.uuid, 'pulp.agent.%s' % consumer_id)
 
 
