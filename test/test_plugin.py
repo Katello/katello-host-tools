@@ -15,7 +15,6 @@ import os
 import sys
 import httplib
 
-from threading import Thread
 from unittest import TestCase
 
 from mock import patch, Mock
@@ -74,17 +73,47 @@ class TestBundle(PluginTest):
 
 class TestCertificateChanged(PluginTest):
 
-    @patch('katello.agent.katelloplugin.Attach')
-    def test_registered(self, fake_attach):
+    @patch('katello.agent.katelloplugin.update_settings')
+    @patch('katello.agent.katelloplugin.send_enabled_report')
+    @patch('katello.agent.katelloplugin.validate_registration')
+    def test_registered(self, validate, send_enabled_report, update_settings):
 
         # test
         self.plugin.certificate_changed('')
 
         # validation
-        fake_attach.assert_called_with()
-        fake_attach = fake_attach.return_value
-        fake_attach.start.assert_called_with()
-        fake_attach.join.assert_called_with()
+        validate.assert_called_with()
+        update_settings.assert_called_with()
+        send_enabled_report.assert_called_with()
+        self.plugin.plugin.attach.assert_called_with()
+
+    @patch('katello.agent.katelloplugin.update_settings')
+    @patch('katello.agent.katelloplugin.validate_registration')
+    def test_run_not_registered(self, validate, update_settings):
+        self.plugin.registered = False
+
+        # test
+        self.plugin.certificate_changed('')
+
+        # validation
+        validate.assert_called_with()
+        self.assertFalse(update_settings.called)
+        self.plugin.plugin.detach.assert_called_with()
+
+    @patch('katello.agent.katelloplugin.sleep')
+    @patch('katello.agent.katelloplugin.update_settings')
+    @patch('katello.agent.katelloplugin.validate_registration')
+    def test_run_validate_failed(self, validate, update_settings, sleep):
+        validate.side_effect = [ValueError, None]
+
+        # test
+        self.plugin.certificate_changed('')
+
+        # validation
+        validate.assert_called_with()
+        sleep.assert_called_once_with(60)
+        update_settings.assert_called_with()
+        self.plugin.plugin.attach.assert_called_with()
 
 
 class TestSendEnabledReport(PluginTest):
@@ -181,8 +210,9 @@ class TestInitializer(PluginTest):
 
     @patch('katello.agent.katelloplugin.path_monitor')
     @patch('katello.agent.katelloplugin.ConsumerIdentity.certpath')
-    @patch('katello.agent.katelloplugin.Attach')
-    def test_init(self, fake_attach, fake_path, fake_pmon):
+    @patch('katello.agent.katelloplugin.validate_registration')
+    def test_init(self, fake_validate, fake_path, fake_pmon):
+        self.plugin.registered = False
 
         # test
         self.plugin.init_plugin()
@@ -192,9 +222,49 @@ class TestInitializer(PluginTest):
         fake_pmon.add.assert_any_call(fake_path(), self.plugin.certificate_changed)
         fake_pmon.add.assert_any_call(self.plugin.REPOSITORY_PATH, self.plugin.send_enabled_report)
         fake_pmon.start.assert_called_with()
-        fake_attach.assert_called_with()
-        fake_attach = fake_attach.return_value
-        fake_attach.start.assert_called_with()
+        fake_validate.assert_called_with()
+
+    @patch('katello.agent.katelloplugin.update_settings')
+    @patch('katello.agent.katelloplugin.send_enabled_report')
+    @patch('katello.agent.katelloplugin.validate_registration')
+    def test_registered(self, validate, send_enabled_report, update_settings):
+
+        # test
+        self.plugin.init_plugin()
+
+        # validation
+        validate.assert_called_with()
+        update_settings.assert_called_with()
+        send_enabled_report.assert_called_with()
+        self.assertFalse(self.plugin.plugin.attach.called)
+
+    @patch('katello.agent.katelloplugin.update_settings')
+    @patch('katello.agent.katelloplugin.validate_registration')
+    def test_run_not_registered(self, validate, update_settings):
+        self.plugin.registered = False
+
+        # test
+        self.plugin.init_plugin()
+
+        # validation
+        validate.assert_called_with()
+        self.assertFalse(update_settings.called)
+        self.assertFalse(self.plugin.plugin.attach.called)
+
+    @patch('katello.agent.katelloplugin.sleep')
+    @patch('katello.agent.katelloplugin.update_settings')
+    @patch('katello.agent.katelloplugin.validate_registration')
+    def test_run_validate_failed(self, validate, update_settings, sleep):
+        validate.side_effect = [ValueError, None]
+
+        # test
+        self.plugin.init_plugin()
+
+        # validation
+        validate.assert_called_with()
+        sleep.assert_called_once_with(60)
+        update_settings.assert_called_with()
+        self.assertFalse(self.plugin.plugin.attach.called)
 
 
 class TestConduit(PluginTest):
@@ -517,56 +587,3 @@ class TestContent(PluginTest):
         # validation
         mock_dispatcher().uninstall.assert_called_with(mock_conduit(), units, options)
         self.assertEqual(report, _report.dict())
-
-
-class TestAttach(PluginTest):
-
-    def test_init(self):
-        attach = self.plugin.Attach()
-        self.assertTrue(isinstance(attach, Thread))
-        self.assertTrue(attach.daemon)
-
-    @patch('katello.agent.katelloplugin.update_settings')
-    @patch('katello.agent.katelloplugin.send_enabled_report')
-    @patch('katello.agent.katelloplugin.validate_registration')
-    def test_run(self, validate, send_enabled_report, update_settings):
-
-        # test
-        attach = self.plugin.Attach()
-        attach.run()
-
-        # validation
-        validate.assert_called_with()
-        update_settings.assert_called_with()
-        send_enabled_report.assert_called_with()
-        self.plugin.plugin.attach.assert_called_with()
-
-    @patch('katello.agent.katelloplugin.update_settings')
-    @patch('katello.agent.katelloplugin.validate_registration')
-    def test_run_not_registered(self, validate, update_settings):
-        self.plugin.registered = False
-
-        # test
-        attach = self.plugin.Attach()
-        attach.run()
-
-        # validation
-        validate.assert_called_with()
-        self.assertFalse(update_settings.called)
-        self.plugin.plugin.detach.assert_called_with()
-
-    @patch('katello.agent.katelloplugin.sleep')
-    @patch('katello.agent.katelloplugin.update_settings')
-    @patch('katello.agent.katelloplugin.validate_registration')
-    def test_run_validate_failed(self, validate, update_settings, sleep):
-        validate.side_effect = [ValueError, None]
-
-        # test
-        attach = self.plugin.Attach()
-        attach.run()
-
-        # validation
-        validate.assert_called_with()
-        sleep.assert_called_once_with(60)
-        update_settings.assert_called_with()
-        self.plugin.plugin.attach.assert_called_with()
