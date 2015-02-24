@@ -23,7 +23,6 @@ import httplib
 sys.path.append('/usr/share/rhsm')
 
 from yum import YumBase
-from threading import Thread
 from time import sleep
 from logging import getLogger, Logger
 
@@ -68,15 +67,25 @@ def init_plugin():
     Initialize the plugin.
     Called (once) immediately after the plugin is loaded.
      - setup path monitoring.
-     - setup plugin configuration.
-     - send an initial repository enabled report.
+     - validate registration.  If registered:
+       - setup plugin configuration.
+       - send an initial repository enabled report.
     """
     path = ConsumerIdentity.certpath()
     path_monitor.add(path, certificate_changed)
     path_monitor.add(REPOSITORY_PATH, send_enabled_report)
     path_monitor.start()
-    attach = Attach()
-    attach.start()
+    while True:
+        try:
+            validate_registration()
+            if registered:
+                update_settings()
+                send_enabled_report()
+            # DONE
+            break
+        except Exception, e:
+            log.warn(str(e))
+            sleep(60)
 
 
 def bundle(certificate):
@@ -106,9 +115,20 @@ def certificate_changed(path):
     :type path: str
     """
     log.info('changed: %s', path)
-    attach = Attach()
-    attach.start()
-    attach.join()
+    while True:
+        try:
+            validate_registration()
+            if registered:
+                send_enabled_report()
+                update_settings()
+                plugin.attach()
+            else:
+                plugin.detach()
+            # DONE
+            break
+        except Exception, e:
+            log.warn(str(e))
+            sleep(60)
 
 
 def send_enabled_report(path=REPOSITORY_PATH):
@@ -135,7 +155,7 @@ def update_settings():
     rhsm_conf = Config(RHSM_CONFIG_PATH)
     certificate = ConsumerIdentity.read()
     plugin.cfg.messaging.cacert = rhsm_conf['rhsm']['repo_ca_cert'] % rhsm_conf['rhsm']
-    plugin.cfg.messaging.url = 'proton+amqps://%s' % rhsm_conf['server']['hostname']
+    plugin.cfg.messaging.url = 'proton+amqps://%s:5647' % rhsm_conf['server']['hostname']
     plugin.cfg.messaging.uuid = 'pulp.agent.%s' % certificate.getConsumerId()
     bundle(certificate)
 
@@ -165,37 +185,6 @@ def validate_registration():
     except Exception, e:
         log.exception(str(e))
         raise
-
-
-class Attach(Thread):
-    """
-    This thread (task) persistently:
-      - validates the registration status
-      - if registered, updates the plugin settings and attach.
-      - if not registered, detach the plugin.
-    The reason for doing this in a thread is that we don't
-    want to block in the initializer.
-    """
-
-    def __init__(self):
-        super(Attach, self).__init__()
-        self.setDaemon(True)
-
-    def run(self):
-        while True:
-            try:
-                validate_registration()
-                if registered:
-                    send_enabled_report()
-                    update_settings()
-                    plugin.attach()
-                else:
-                    plugin.detach()
-                # DONE
-                break
-            except Exception, e:
-                log.warn(str(e))
-                sleep(60)
 
 
 class Conduit(HandlerConduit):
