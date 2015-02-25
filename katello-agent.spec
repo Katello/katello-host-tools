@@ -1,6 +1,6 @@
 Name: katello-agent
 Version: 2.2.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: The Katello Agent
 Group:   Development/Languages
 License: LGPLv2
@@ -74,6 +74,24 @@ service goferd restart
 %doc LICENSE
 
 %changelog
+* Tue Feb 24 2015 Eric D. Helms <ericdhelms@gmail.com>
+- Using port: 5647 for dispatch router. (jortel@redhat.com)
+- registration fixes. (jortel@redhat.com)
+- Using proton; consumer registration validated. (jortel@redhat.com)
+- gofer 2.x compat. (jortel@redhat.com)
+- refs #9403 - get rhsm certificate from rhsm configration
+  (stbenjam@redhat.com)
+- fixes #9403 - use correct certificate location (stbenjam@redhat.com)
+
+* Tue Feb 24 2015 Eric D. Helms <ericdhelms@gmail.com>
+- Using port: 5647 for dispatch router. (jortel@redhat.com)
+- registration fixes. (jortel@redhat.com)
+- Using proton; consumer registration validated. (jortel@redhat.com)
+- gofer 2.x compat. (jortel@redhat.com)
+- refs #9403 - get rhsm certificate from rhsm configration
+  (stbenjam@redhat.com)
+- fixes #9403 - use correct certificate location (stbenjam@redhat.com)
+
 * Fri Dec 19 2014 David Davis <daviddavis@redhat.com> 2.2.0-1
 - fixes #7815 - fixing katello-agent for older subscription-managers
   (jsherril@redhat.com)
