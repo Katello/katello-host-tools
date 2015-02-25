@@ -74,6 +74,16 @@ service goferd restart
 %doc LICENSE
 
 %changelog
+* Tue Feb 24 2015 Eric D. Helms <ericdhelms@gmail.com> 2.2.0-2
+- Bumping release to 2.2.0-2 (ericdhelms@gmail.com)
+- Using port: 5647 for dispatch router. (jortel@redhat.com)
+- registration fixes. (jortel@redhat.com)
+- Using proton; consumer registration validated. (jortel@redhat.com)
+- gofer 2.x compat. (jortel@redhat.com)
+- refs #9403 - get rhsm certificate from rhsm configration
+  (stbenjam@redhat.com)
+- fixes #9403 - use correct certificate location (stbenjam@redhat.com)
+
 * Tue Feb 24 2015 Eric D. Helms <ericdhelms@gmail.com>
 - Using port: 5647 for dispatch router. (jortel@redhat.com)
 - registration fixes. (jortel@redhat.com)
