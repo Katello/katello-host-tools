@@ -1,6 +1,6 @@
 Name: katello-agent
-Version: 2.2.0
-Release: 2%{?dist}
+Version: 2.3.0
+Release: 1%{?dist}
 Summary: The Katello Agent
 Group:   Development/Languages
 License: LGPLv2
@@ -74,6 +74,9 @@ service goferd restart
 %doc LICENSE
 
 %changelog
+* Tue Feb 24 2015 Eric D. Helms <ericdhelms@gmail.com> 2.3.0-1
+- 
+
 * Tue Feb 24 2015 Eric D. Helms <ericdhelms@gmail.com> 2.2.0-2
 - Bumping release to 2.2.0-2 (ericdhelms@gmail.com)
 - Using port: 5647 for dispatch router. (jortel@redhat.com)
