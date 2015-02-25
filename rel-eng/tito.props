@@ -2,10 +2,10 @@
 default_builder = tito.builder.Builder
 default_tagger = tito.tagger.VersionTagger
 
-[katello-nightly-rhel6]
+[katello-2.2-rhel6]
 disttag = .el6
 blacklist =
 
-[katello-nightly-rhel7]
+[katello-2.2-rhel7]
 disttag = .el7
 blacklist =
