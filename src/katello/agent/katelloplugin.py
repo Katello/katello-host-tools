@@ -154,7 +154,22 @@ def update_settings():
     """
     rhsm_conf = Config(RHSM_CONFIG_PATH)
     certificate = ConsumerIdentity.read()
-    plugin.cfg.messaging.cacert = rhsm_conf['rhsm']['repo_ca_cert'] % rhsm_conf['rhsm']
+    ca_cert_dir = rhsm_conf['rhsm']['ca_cert_dir']
+    # the 'katello-default-ca.pem' is the ca used for generating the CA certs.
+    # the 'candlepin-local.pem' is there for compatibility reasons (the old path where the
+    # legacy installer was putting this file. If none of them is present, there is still
+    # a chance the rhsm_conf['rhsm']['repo_ca_cert'] is serving as the CA for issuing
+    # the client certs
+    ca_candidates = [ca_cert_dir + 'katello-default-ca.pem', ca_cert_dir + 'candlepin-local.pem', rhsm_conf['rhsm']['repo_ca_cert'] % rhsm_conf['rhsm']]
+    existing_ca_certs = [cert for cert in ca_candidates if os.path.exists(cert)]
+    if not existing_ca_certs:
+       log.warn('None of the ca cert files %s found for the qpid connection' % ca_candidates)
+
+       raise
+    else:
+       log.info('Using %s as the ca cert for qpid connection' % existing_ca_certs[0])
+
+    plugin.cfg.messaging.cacert = existing_ca_certs[0]
     plugin.cfg.messaging.url = 'proton+amqps://%s:5647' % rhsm_conf['server']['hostname']
     plugin.cfg.messaging.uuid = 'pulp.agent.%s' % certificate.getConsumerId()
     bundle(certificate)
