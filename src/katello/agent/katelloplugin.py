@@ -160,7 +160,9 @@ def update_settings():
     # legacy installer was putting this file. If none of them is present, there is still
     # a chance the rhsm_conf['rhsm']['repo_ca_cert'] is serving as the CA for issuing
     # the client certs
-    ca_candidates = [ca_cert_dir + 'katello-default-ca.pem', ca_cert_dir + 'candlepin-local.pem', rhsm_conf['rhsm']['repo_ca_cert'] % rhsm_conf['rhsm']]
+    ca_candidates = [os.path.join(ca_cert_dir, 'katello-default-ca.pem'),
+                     os.path.join(ca_cert_dir, 'candlepin-local.pem'),
+                     rhsm_conf['rhsm']['repo_ca_cert'] % rhsm_conf['rhsm']]
     existing_ca_certs = [cert for cert in ca_candidates if os.path.exists(cert)]
     if not existing_ca_certs:
        log.warn('None of the ca cert files %s found for the qpid connection' % ca_candidates)
