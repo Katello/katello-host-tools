@@ -179,8 +179,15 @@ class TestUpdateSettings(PluginTest):
     def test_call(self, fake_read, fake_conf, fake_bundle):
         consumer_id = '1234'
         host = 'redhat.com'
-        ca_cert_dir = '/etc/rhsm/ca/'
-        ca_cert = '%(ca_cert_dir)skatello-server-ca.pem'
+        ca_cert_dir = os.path.join(os.path.dirname(__file__), 'data/ca/')
+        if not os.path.exists(ca_cert_dir):
+            os.makedirs(ca_cert_dir)
+
+        default_ca_cert = os.path.join(ca_cert_dir, 'katello-default-ca.pem')
+        if not os.path.exists(default_ca_cert):
+            open(default_ca_cert, 'a').close()
+
+        server_ca_cert = '%(ca_cert_dir)skatello-server-ca.pem'
         fake_certificate = Mock()
         fake_certificate.getConsumerId.return_value = consumer_id
         fake_read.return_value = fake_certificate
@@ -189,7 +196,7 @@ class TestUpdateSettings(PluginTest):
                 'hostname': host
             },
             'rhsm': {
-                'repo_ca_cert': ca_cert,
+                'repo_ca_cert': server_ca_cert,
                 'ca_cert_dir': ca_cert_dir
             }
         }
@@ -201,7 +208,7 @@ class TestUpdateSettings(PluginTest):
         fake_read.assert_called_with()
         fake_bundle.assert_called_with(fake_certificate)
         plugin_cfg = self.plugin.plugin.cfg
-        self.assertEqual(plugin_cfg.messaging.cacert, '/etc/rhsm/ca/katello-server-ca.pem')
+        self.assertEqual(plugin_cfg.messaging.cacert, default_ca_cert)
         self.assertEqual(plugin_cfg.messaging.url, 'proton+amqps://%s:5647' % host)
         self.assertEqual(plugin_cfg.messaging.uuid, 'pulp.agent.%s' % consumer_id)
 
