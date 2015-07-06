@@ -6,7 +6,7 @@ default_tagger = tito.tagger.VersionTagger
 disttag = .el5
 blacklist =
 
-[katello-nightly-rhel6]
+[katello-2.3-rhel6]
 disttag = .el6
 blacklist =
 
