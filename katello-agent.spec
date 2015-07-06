@@ -74,6 +74,13 @@ service goferd restart
 %doc LICENSE
 
 %changelog
+* Mon Jul 06 2015 Stephen Benjamin <stbenjam@redhat.com> 2.4.0-1
+- Version buimp to 2.4.0 (stbenjam@redhat.com)
+- Fixes #10670 - preffer the katello-default-ca.pem as the client ca cert
+  (inecas@redhat.com)
+- refs #10224 - adding fedora to releasers (jsherril@redhat.com)
+- Adding el5 releaser. (ericdhelms@gmail.com)
+
 * Tue Feb 24 2015 Eric D. Helms <ericdhelms@gmail.com> 2.3.0-1
 - 
 
