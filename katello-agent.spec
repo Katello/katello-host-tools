@@ -50,8 +50,21 @@ cp bin/katello-package-upload %{buildroot}%{_sbindir}/katello-package-upload
 rm -rf %{buildroot}
 
 %post
-chkconfig goferd on
-service goferd restart
+%if 0%{?fedora} > 18 || 0%{?rhel} > 6
+    systemctl enable goferd
+    if systemctl status goferd | grep 'active (running)'; then
+        systemctl restart goferd
+    else
+        systemctl start goferd
+    fi
+%else
+    chkconfig goferd on
+    if service goferd status | grep 'is running'; then
+        service goferd restart
+    else
+        service goferd start
+    fi
+%endif
 
 %postun
 %if 0%{?fedora} > 18 || 0%{?rhel} > 6
