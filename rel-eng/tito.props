@@ -21,3 +21,7 @@ blacklist =
 [katello-nightly-fedora21]
 disttag = .fc21
 blacklist =
+
+[katello-nightly-fedora22]
+disttag = .fc22
+blacklist =
