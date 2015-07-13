@@ -1,6 +1,6 @@
 Name: katello-agent
 Version: 2.3.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 Summary: The Katello Agent
 Group:   Development/Languages
 License: LGPLv2
@@ -74,6 +74,9 @@ service goferd restart
 %doc LICENSE
 
 %changelog
+* Mon Jul 13 2015 Stephen Benjamin <stbenjam@redhat.com> 2.3.1-4
+- Fix rel-eng for rhel5 for 2.3 (stbenjam@redhat.com)
+
 * Mon Jul 13 2015 Stephen Benjamin <stbenjam@redhat.com> 2.3.1-3
 - Fix rel-eng for Katello 2.3 again (stbenjam@redhat.com)
 
