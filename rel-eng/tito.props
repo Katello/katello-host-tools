@@ -21,3 +21,7 @@ blacklist =
 [katello-2.3-fedora21]
 disttag = .fc21
 blacklist =
+
+[katello-2.3-fedora22]
+disttag = .fc22
+blacklist =
