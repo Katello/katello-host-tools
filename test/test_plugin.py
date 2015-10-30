@@ -301,8 +301,8 @@ class TestConduit(PluginTest):
         conduit.update_progress(report)
 
         # validation
-        mock_context.progress.report.assert_called_with()
-        self.assertEqual(mock_context.progress.details, report)
+        # Reporting disabled
+        self.assertFalse(mock_context.progress.report.called)
 
     @patch('gofer.agent.rmi.Context.current')
     def test_cancelled(self, mock_current):
