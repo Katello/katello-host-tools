@@ -225,9 +225,14 @@ class Conduit(HandlerConduit):
         :param report: A handler progress report.
         :type report: object
         """
-        context = Context.current()
-        context.progress.details = report
-        context.progress.report()
+        #
+        # Disabled to mitigate Qpid journal latency
+        # related to AMQP 1.0. The latency significantly degrades
+        # performance. This is a temporary solution.
+        #
+        # context = Context.current()
+        # context.progress.details = report
+        # context.progress.report()
 
     def cancelled(self):
         """
