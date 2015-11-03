@@ -221,13 +221,14 @@ class Conduit(HandlerConduit):
 
     def update_progress(self, report):
         """
-        Send the updated progress report.
+        This method inentionally left blank mitigate Qpid journal
+        latency related to AMQP 1.0.  The latency significantly
+        degrades performance. If a better solution is found we
+        may re-enable this method to actually report back progress.
+        See http://projects.theforeman.org/issues/12375
         :param report: A handler progress report.
         :type report: object
         """
-        context = Context.current()
-        context.progress.details = report
-        context.progress.report()
 
     def cancelled(self):
         """
