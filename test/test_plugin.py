@@ -541,6 +541,11 @@ class TestValidateRegistration(PluginTest):
         get_consumer.assert_called_with(consumer_id)
         self.assertFalse(self.plugin.registered)
 
+class TestConsumer(PluginTest):
+
+    def test_unregister(self):
+        consumer = self.plugin.Consumer()
+        consumer.unregister()
 
 class TestContent(PluginTest):
 

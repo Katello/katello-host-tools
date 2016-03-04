@@ -350,6 +350,14 @@ class UEP(UEPConnection):
 
 
 # --- API --------------------------------------------------------------------
+class Consumer(object):
+    """
+    When a consumer is unregistered, Katello notifies the goferd.
+    """
+
+    @remote
+    def unregister(self):
+        log.info('Consumer has been unregistered. Katello agent will no longer function until this system is reregistered.')
 
 
 class Content(object):
