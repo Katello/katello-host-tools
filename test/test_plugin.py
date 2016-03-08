@@ -172,34 +172,54 @@ class TestSendEnabledReport(PluginTest):
 
 
 class TestUpdateSettings(PluginTest):
+    host = 'redhat.com'
+    server_ca_cert = '%(ca_cert_dir)skatello-server-ca.pem'
 
     @patch('katello.agent.katelloplugin.bundle')
     @patch('katello.agent.katelloplugin.Config')
     @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    def test_call(self, fake_read, fake_conf, fake_bundle):
-        consumer_id = '1234'
-        host = 'redhat.com'
+    def test_call_new(self, fake_read, fake_conf, fake_bundle):
+        fake_conf.return_value = {
+            'server': {
+                'hostname': self.host
+            },
+            'rhsm': {
+                'repo_ca_cert': self.server_ca_cert,
+                'ca_cert_dir': self.ca_cert_dir()
+            }
+        }
+        self.call(fake_read, fake_conf, fake_bundle)
+
+    @patch('katello.agent.katelloplugin.bundle')
+    @patch('katello.agent.katelloplugin.Config')
+    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
+    def test_call_old_config(self, fake_read, fake_conf, fake_bundle):
+        fake_conf.return_value = {
+            'server': {
+                'hostname': self.host,
+                'ca_cert_dir': self.ca_cert_dir()
+            },
+            'rhsm': {
+                'repo_ca_cert': self.server_ca_cert,
+            }
+        }
+        self.call(fake_read, fake_conf, fake_bundle)
+
+    def ca_cert_dir(self):
         ca_cert_dir = os.path.join(os.path.dirname(__file__), 'data/ca/')
         if not os.path.exists(ca_cert_dir):
             os.makedirs(ca_cert_dir)
+        return ca_cert_dir
 
-        default_ca_cert = os.path.join(ca_cert_dir, 'katello-default-ca.pem')
+    def call(self, fake_read, fake_conf, fake_bundle):
+        consumer_id = '1234'
+        default_ca_cert = os.path.join(self.ca_cert_dir(), 'katello-default-ca.pem')
         if not os.path.exists(default_ca_cert):
             open(default_ca_cert, 'a').close()
 
-        server_ca_cert = '%(ca_cert_dir)skatello-server-ca.pem'
         fake_certificate = Mock()
         fake_certificate.getConsumerId.return_value = consumer_id
         fake_read.return_value = fake_certificate
-        fake_conf.return_value = {
-            'server': {
-                'hostname': host
-            },
-            'rhsm': {
-                'repo_ca_cert': server_ca_cert,
-                'ca_cert_dir': ca_cert_dir
-            }
-        }
 
         # test
         self.plugin.update_settings()
@@ -209,7 +229,7 @@ class TestUpdateSettings(PluginTest):
         fake_bundle.assert_called_with(fake_certificate)
         plugin_cfg = self.plugin.plugin.cfg
         self.assertEqual(plugin_cfg.messaging.cacert, default_ca_cert)
-        self.assertEqual(plugin_cfg.messaging.url, 'proton+amqps://%s:5647' % host)
+        self.assertEqual(plugin_cfg.messaging.url, 'proton+amqps://%s:5647' % self.host)
         self.assertEqual(plugin_cfg.messaging.uuid, 'pulp.agent.%s' % consumer_id)
 
 
