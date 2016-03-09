@@ -154,7 +154,12 @@ def update_settings():
     """
     rhsm_conf = Config(RHSM_CONFIG_PATH)
     certificate = ConsumerIdentity.read()
-    ca_cert_dir = rhsm_conf['rhsm']['ca_cert_dir']
+    if rhsm_conf['rhsm'].has_key('ca_cert_dir'):
+        ca_cert_dir = rhsm_conf['rhsm']['ca_cert_dir']
+    else:
+        #handle old subscription-manager configurations
+        ca_cert_dir = rhsm_conf['server']['ca_cert_dir']
+ 
     # the 'katello-default-ca.pem' is the ca used for generating the CA certs.
     # the 'candlepin-local.pem' is there for compatibility reasons (the old path where the
     # legacy installer was putting this file. If none of them is present, there is still
@@ -162,7 +167,7 @@ def update_settings():
     # the client certs
     ca_candidates = [os.path.join(ca_cert_dir, 'katello-default-ca.pem'),
                      os.path.join(ca_cert_dir, 'candlepin-local.pem'),
-                     rhsm_conf['rhsm']['repo_ca_cert'] % rhsm_conf['rhsm']]
+                     rhsm_conf['rhsm']['repo_ca_cert'] % {'ca_cert_dir': ca_cert_dir}]
     existing_ca_certs = [cert for cert in ca_candidates if os.path.exists(cert)]
     if not existing_ca_certs:
        log.warn('None of the ca cert files %s found for the qpid connection' % ca_candidates)
