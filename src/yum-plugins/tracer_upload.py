@@ -21,10 +21,17 @@ def query_apps(conduit):
     """Returns all apps that need restarting """
     query = Query()
     if conduit:
-        pkgs = conduit.getTsInfo().getMembers()
+        # When running via yum we need to pass tracer a list of packages and 
+        # their last modified time so it has no need to access the rpmdb (which
+        # would fail as yum/dnf has a lock on it) 
         packages = []
+        pkgs = conduit.getTsInfo().getMembers() # Packages in the current transation
         for pkg in pkgs:
             pkg.modified = time.time()
+            packages.append(pkg)
+        rpmdb = conduit.getRpmDB() # All other packages
+        for pkg in rpmdb:
+            pkg.modified = pkg.installtime
             packages.append(pkg)
         return query.from_packages(packages).now().affected_applications().get()
     else:
