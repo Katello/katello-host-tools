@@ -25,8 +25,9 @@ sys.path.append('/usr/share/rhsm')
 from yum import YumBase
 from time import sleep
 from logging import getLogger, Logger
+from subprocess import Popen
 
-from gofer.decorators import initializer, remote
+from gofer.decorators import initializer, remote, action
 from gofer.agent.plugin import Plugin
 from gofer.pmon import PathMonitor
 from gofer.agent.rmi import Context
@@ -207,6 +208,62 @@ def validate_registration():
     except Exception, e:
         log.exception(str(e))
         raise
+
+
+class AgentRestart(object):
+    """
+    Restart the daemon after RPM upgrade.
+    The %post in the RPM will write the RESTART_FILE.  The recurring
+    'apply' action notices file and restarts the goferd service only when
+    this plugin is not longer busy.
+    """
+
+    COMMAND = 'service goferd restart'
+    RESTART_FILE = '/tmp/katello-agent-restart'
+
+    @staticmethod
+    def is_busy():
+        """
+        Determine if this plugin is busy by counting the pending
+        requests in the persistent queue.
+
+        :return: True if busy.
+        :rtype: bool
+        """
+        pending = plugin.scheduler.pending
+        path = os.path.join(pending.PENDING, pending.stream)
+        count = len(os.listdir(path))
+        return count > 0
+
+    @staticmethod
+    def restart():
+        """
+        Restart the goferd service.
+          1. Delete the RESTART_FILE.
+          2. Restart
+
+        :return: The restart command exit value.
+        :rtype: int
+        """
+        os.unlink(AgentRestart.RESTART_FILE)
+        p = Popen(AgentRestart.COMMAND, shell=True)
+        return p.wait()
+
+    @action(minutes=3)
+    def apply(self):
+        """
+        Detect the RESTART_FILE and restart the goferd service
+        only when this plugin is not longer busy.  This ensures that
+        an RPM update has completed.
+        """
+        if not os.path.exists(AgentRestart.RESTART_FILE):
+            return
+        if self.is_busy():
+            return
+        log.info('Restarting goferd.')
+        exit_val = self.restart()
+        # only reached when restart failed.
+        log.error('Restart failed, exit=%d', exit_val)
 
 
 class Conduit(HandlerConduit):

@@ -38,9 +38,12 @@ class PluginTest(TestCase):
     def load_plugin():
         plugin = __import__('katello.agent.katelloplugin', {}, {}, ['katelloplugin'])
         reload(plugin)
+        plugin._module = plugin
         plugin_cfg = Mock()
         plugin_cfg.messaging = Mock()
         plugin.plugin = Mock()
+        plugin.plugin.scheduler = Mock()
+        plugin.plugin.scheduler.pending = Mock(PENDING='/tmp/pending', stream='abc')
         plugin.plugin.cfg = plugin_cfg
         plugin.path_monitor = Mock()
         plugin.registered = True
@@ -619,3 +622,91 @@ class TestContent(PluginTest):
         # validation
         mock_dispatcher().uninstall.assert_called_with(mock_conduit(), units, options)
         self.assertEqual(report, _report.dict())
+
+
+class TestAgentRestart(PluginTest):
+
+    @patch('os.listdir')
+    def test_busy(self, listdir):
+        listdir.return_value = [
+            'file0',
+            'file1'
+        ]
+
+        # test
+        restart = self.plugin.AgentRestart()
+        busy = restart.is_busy()
+
+        # validation
+        listdir.assert_called_once_with('/tmp/pending/abc')
+        self.assertTrue(busy)
+
+    @patch('os.listdir')
+    def test_not_busy(self, listdir):
+        listdir.return_value = []
+
+        # test
+        restart = self.plugin.AgentRestart()
+        busy = restart.is_busy()
+
+        # validation
+        listdir.assert_called_once_with('/tmp/pending/abc')
+        self.assertFalse(busy)
+
+    @patch('os.unlink')
+    @patch('katello.agent.katelloplugin.Popen')
+    def test_restart(self, popen, unlink):
+        popen.return_value.wait.return_value = 123
+
+        # test
+        restart = self.plugin.AgentRestart()
+        exit_val = restart.restart()
+
+        # validation
+        unlink.assert_called_once_with(self.plugin.AgentRestart.RESTART_FILE)
+        popen.assert_called_once_with(self.plugin.AgentRestart.COMMAND, shell=True)
+        popen.return_value.wait.assert_called_once_with()
+        self.assertEqual(exit_val, popen.return_value.wait.return_value)
+
+    @patch('os.path.exists')
+    def test_apply_not_requested(self, exists):
+        exists.return_value = False
+
+        # test
+        restart = self.plugin.AgentRestart()
+        restart.restart = Mock()
+        restart.apply()
+
+        # validation
+        exists.assert_called_once_with(self.plugin.AgentRestart.RESTART_FILE)
+        self.assertFalse(restart.restart.called)
+
+    @patch('os.path.exists')
+    def test_apply_request_and_busy(self, exists):
+        exists.return_value = True
+
+        # test
+        restart = self.plugin.AgentRestart()
+        restart.is_busy = Mock(return_value=True)
+        restart.restart = Mock()
+        restart.apply()
+
+        # validation
+        exists.assert_called_once_with(self.plugin.AgentRestart.RESTART_FILE)
+        restart.is_busy.assert_called_once_with()
+        self.assertFalse(restart.restart.called)
+
+    @patch('os.path.exists')
+    def test_apply_restarted(self, exists):
+        exists.return_value = True
+
+        # test
+        restart = self.plugin.AgentRestart()
+        restart.is_busy = Mock(return_value=False)
+        restart.restart = Mock(return_value=0)
+        restart.apply()
+
+        # validation
+        exists.assert_called_once_with(self.plugin.AgentRestart.RESTART_FILE)
+        restart.is_busy.assert_called_once_with()
+        restart.restart.assert_called_once_with()
