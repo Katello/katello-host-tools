@@ -1,0 +1,2 @@
+# Send a new Tracer report after a reboot
+@reboot root /sbin/katello-tracer-upload > /dev/null 2>&1
