@@ -29,7 +29,7 @@ requires = [
 
 setup(
     name='katello-agent',
-    version='0.1',
+    version='2.9.1',
     description='Katello Agent',
     author='Jeff Ortel',
     author_email='jortel@redhat.com',
