@@ -130,8 +130,11 @@ class TestSendEnabledReport(PluginTest):
         fake_certificate = Mock()
         fake_certificate.getConsumerId.return_value = consumer_id
         fake_read.return_value = fake_certificate
+        fake_pool = Mock()
+        fake_pool.run.side_effect = lambda fn: fn()
 
         # test
+        self.plugin.plugin.pool = fake_pool
         self.plugin.send_enabled_report(path)
 
         # validation
@@ -144,15 +147,19 @@ class TestSendEnabledReport(PluginTest):
     @patch('katello.agent.katelloplugin.UEP.report_enabled')
     def test_send_when_unregistered(self, fake_report_enabled, fake_read, fake_report):
         path = '/tmp/path/test'
+        fake_pool = Mock()
+        fake_pool.run.side_effect = lambda fn: fn()
 
         # test
         self.plugin.registered = False
+        self.plugin.plugin.pool = fake_pool
         self.plugin.send_enabled_report(path)
 
         # validation
         self.assertFalse(fake_read.called)
         self.assertFalse(fake_report.called)
         self.assertFalse(fake_report_enabled.called)
+        self.assertFalse(fake_pool.run.called)
 
     @patch('katello.agent.katelloplugin.EnabledReport')
     @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
@@ -164,8 +171,11 @@ class TestSendEnabledReport(PluginTest):
         fake_certificate.getConsumerId.return_value = consumer_id
         fake_read.return_value = fake_certificate
         fake_report_enabled.side_effect = ValueError
+        fake_pool = Mock()
+        fake_pool.run.side_effect = lambda fn: fn()
 
         # test
+        self.plugin.plugin.pool = fake_pool
         self.plugin.send_enabled_report(path)
 
         # validation

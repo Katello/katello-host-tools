@@ -135,18 +135,30 @@ def certificate_changed(path):
 def send_enabled_report(path=REPOSITORY_PATH):
     """
     Send the enabled repository report.
+
+    Note:
+      To mitigate bug:1204825, report generation is dispatched through the
+      plugin's thread pool.  The pool is configured [by default] with threads=1 and
+      by doing this, concurrent usage of urlgrabber should be eliminated.
+
+    [1] https://bugzilla.redhat.com/show_bug.cgi?id=1204825
+
     :param path: The path to a repository file.
     :type path: str
     """
     if not registered:
         return
-    try:
-        uep = UEP()
-        certificate = ConsumerIdentity.read()
-        report = EnabledReport(path)
-        uep.report_enabled(certificate.getConsumerId(), report.content)
-    except Exception, e:
-        log.error('send enabled report failed: %s', str(e))
+
+    def send():
+        try:
+            uep = UEP()
+            certificate = ConsumerIdentity.read()
+            report = EnabledReport(path)
+            uep.report_enabled(certificate.getConsumerId(), report.content)
+        except Exception, e:
+            log.error('send enabled report failed: %s', str(e))
+
+    plugin.pool.run(send)
 
 
 def update_settings():
