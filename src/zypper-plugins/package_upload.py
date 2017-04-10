@@ -38,7 +38,7 @@ try:
 except ImportError:
     pass
 
-class MyPlugin(Plugin):
+class KatelloZyppPlugin(Plugin):
 
     def __init__(self):
         Plugin.__init__(self)
@@ -127,12 +127,13 @@ if "DISABLE_KATELLO_ZYPP_PLUGIN" in environ:
 
     logging.info("$DISABLE_KATELLO_ZYPP_PLUGIN is set - disabling katello-zypp-plugin")
 
-    # a dummy Plugin is needed
+    # As the plugin is disabled, we are adding a dummy
+    # Plugin so that zypper still works.
     plugin = Plugin()
     plugin.main()
 
 else:
 
-    plugin = MyPlugin()
+    plugin = KatelloZyppPlugin()
     plugin.main()
 
