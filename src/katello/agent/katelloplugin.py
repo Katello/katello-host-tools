@@ -21,6 +21,7 @@ import sys
 import httplib
 
 sys.path.append('/usr/share/rhsm')
+sys.path.append('/usr/lib/yum-plugins')
 
 from yum import YumBase
 from time import sleep
@@ -32,6 +33,8 @@ from gofer.agent.plugin import Plugin
 from gofer.pmon import PathMonitor
 from gofer.agent.rmi import Context
 from gofer.config import Config
+
+import enabled_repos_upload
 
 try:
     from subscription_manager.identity import ConsumerIdentity
@@ -70,7 +73,6 @@ def init_plugin():
      - setup path monitoring.
      - validate registration.  If registered:
        - setup plugin configuration.
-       - send an initial repository enabled report.
     """
     path = ConsumerIdentity.certpath()
     path_monitor.add(path, certificate_changed)
@@ -81,7 +83,6 @@ def init_plugin():
             validate_registration()
             if registered:
                 update_settings()
-                send_enabled_report()
             # DONE
             break
         except Exception, e:
@@ -120,8 +121,8 @@ def certificate_changed(path):
         try:
             validate_registration()
             if registered:
-                send_enabled_report()
                 update_settings()
+                enabled_repos_upload.upload_enabled_repos_report()
                 plugin.attach()
             else:
                 plugin.detach()
@@ -131,35 +132,8 @@ def certificate_changed(path):
             log.warn(str(e))
             sleep(60)
 
-
 def send_enabled_report(path=REPOSITORY_PATH):
-    """
-    Send the enabled repository report.
-
-    Note:
-      To mitigate bug:1204825, report generation is dispatched through the
-      plugin's thread pool.  The pool is configured [by default] with threads=1 and
-      by doing this, concurrent usage of urlgrabber should be eliminated.
-
-    [1] https://bugzilla.redhat.com/show_bug.cgi?id=1204825
-
-    :param path: The path to a repository file.
-    :type path: str
-    """
-    if not registered:
-        return
-
-    def send():
-        try:
-            uep = UEP()
-            certificate = ConsumerIdentity.read()
-            report = EnabledReport(path)
-            uep.report_enabled(certificate.getConsumerId(), report.content)
-        except Exception, e:
-            log.error('send enabled report failed: %s', str(e))
-
-    plugin.pool.run(send)
-
+    enabled_repos_upload.upload_enabled_repos_report()
 
 def update_settings():
     """
@@ -313,67 +287,6 @@ class Conduit(HandlerConduit):
         context = Context.current()
         return context.cancelled()
 
-
-class EnabledReport(object):
-    """
-    Represents the enabled repos report.
-    @ivar content: The report content <dict>:
-      - basearch <str>
-      - releasever <str>
-      - repos[] <dict>:
-        - repositoryid <str>
-        - baseurl <str>
-    :type content: dict
-    """
-
-    @staticmethod
-    def find_enabled(yb, repofn):
-        """
-        Get enabled repos part of the report.
-        :param yb: yum lib.
-        :type yb: YumBase
-        :param repofn: The .repo file basename used to filter the report.
-        :type repofn: str
-        :return: The repo list content
-        :rtype: dict
-        """
-        enabled = []
-        for r in yb.repos.listEnabled():
-            if not r.repofile:
-                continue
-            fn = os.path.basename(r.repofile)
-            if fn != repofn:
-                continue
-            item = dict(repositoryid=r.id, baseurl=r.baseurl)
-            enabled.append(item)
-        return dict(repos=enabled)
-
-    @staticmethod
-    def generate(repofn):
-        """
-        Generate the report content.
-        :param repofn: The .repo file basename used to filter the report.
-        :type repofn: str
-        :return: The report content
-        :rtype: dict
-        """
-        yb = Yum()
-        try:
-            return dict(enabled_repos=EnabledReport.find_enabled(yb, repofn))
-        finally:
-            yb.close()
-
-    def __init__(self, path):
-        """
-        :param path: A .repo file path used to filter the report.
-        :type path: str
-        """
-        self.content = EnabledReport.generate(os.path.basename(path))
-
-    def __str__(self):
-        return str(self.content)
-
-
 class Yum(YumBase):
     """
     Provides custom configured yum object.
@@ -399,7 +312,6 @@ class Yum(YumBase):
         self.closeRpmDB()
         self.cleanLoggers()
 
-
 class UEP(UEPConnection):
     """
     Represents the UEP.
@@ -409,18 +321,6 @@ class UEP(UEPConnection):
         key = ConsumerIdentity.keypath()
         cert = ConsumerIdentity.certpath()
         UEPConnection.__init__(self, key_file=key, cert_file=cert)
-
-    def report_enabled(self, consumer_id, report):
-        """
-        Report enabled repositories to the UEP.
-        :param consumer_id: The consumer ID.
-        :type consumer_id: str
-        :param report: The report to send.
-        :type report: dict
-        """
-        log.info('reporting: %s', report)
-        method = '/systems/%s/enabled_repos' % self.sanitize(consumer_id)
-        return self.conn.request_put(method, report)
 
 
 # --- API --------------------------------------------------------------------

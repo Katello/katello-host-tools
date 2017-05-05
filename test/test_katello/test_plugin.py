@@ -77,9 +77,8 @@ class TestBundle(PluginTest):
 class TestCertificateChanged(PluginTest):
 
     @patch('katello.agent.katelloplugin.update_settings')
-    @patch('katello.agent.katelloplugin.send_enabled_report')
     @patch('katello.agent.katelloplugin.validate_registration')
-    def test_registered(self, validate, send_enabled_report, update_settings):
+    def test_registered(self, validate, update_settings):
 
         # test
         self.plugin.certificate_changed('')
@@ -87,7 +86,6 @@ class TestCertificateChanged(PluginTest):
         # validation
         validate.assert_called_with()
         update_settings.assert_called_with()
-        send_enabled_report.assert_called_with()
         self.plugin.plugin.attach.assert_called_with()
 
     @patch('katello.agent.katelloplugin.update_settings')
@@ -117,72 +115,6 @@ class TestCertificateChanged(PluginTest):
         sleep.assert_called_once_with(60)
         update_settings.assert_called_with()
         self.plugin.plugin.attach.assert_called_with()
-
-
-class TestSendEnabledReport(PluginTest):
-
-    @patch('katello.agent.katelloplugin.EnabledReport')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    @patch('katello.agent.katelloplugin.UEP.report_enabled')
-    def test_send_when_registered(self, fake_report_enabled, fake_read, fake_report):
-        path = '/tmp/path/test'
-        consumer_id = '1234'
-        fake_certificate = Mock()
-        fake_certificate.getConsumerId.return_value = consumer_id
-        fake_read.return_value = fake_certificate
-        fake_pool = Mock()
-        fake_pool.run.side_effect = lambda fn: fn()
-
-        # test
-        self.plugin.plugin.pool = fake_pool
-        self.plugin.send_enabled_report(path)
-
-        # validation
-        fake_report.assert_called_with(path)
-        fake_certificate.getConsumerId.assert_called_with()
-        fake_report_enabled.assert_called_with(consumer_id, fake_report().content)
-
-    @patch('katello.agent.katelloplugin.EnabledReport')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    @patch('katello.agent.katelloplugin.UEP.report_enabled')
-    def test_send_when_unregistered(self, fake_report_enabled, fake_read, fake_report):
-        path = '/tmp/path/test'
-        fake_pool = Mock()
-        fake_pool.run.side_effect = lambda fn: fn()
-
-        # test
-        self.plugin.registered = False
-        self.plugin.plugin.pool = fake_pool
-        self.plugin.send_enabled_report(path)
-
-        # validation
-        self.assertFalse(fake_read.called)
-        self.assertFalse(fake_report.called)
-        self.assertFalse(fake_report_enabled.called)
-        self.assertFalse(fake_pool.run.called)
-
-    @patch('katello.agent.katelloplugin.EnabledReport')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    @patch('katello.agent.katelloplugin.UEP.report_enabled')
-    def test_send_failed(self, fake_report_enabled, fake_read, fake_report):
-        path = '/tmp/path/test'
-        consumer_id = '1234'
-        fake_certificate = Mock()
-        fake_certificate.getConsumerId.return_value = consumer_id
-        fake_read.return_value = fake_certificate
-        fake_report_enabled.side_effect = ValueError
-        fake_pool = Mock()
-        fake_pool.run.side_effect = lambda fn: fn()
-
-        # test
-        self.plugin.plugin.pool = fake_pool
-        self.plugin.send_enabled_report(path)
-
-        # validation
-        fake_report.assert_called_with(path)
-        fake_certificate.getConsumerId.assert_called_with()
-        fake_report_enabled.assert_called_with(consumer_id, fake_report().content)
-
 
 class TestUpdateSettings(PluginTest):
     host = 'redhat.com'
@@ -260,14 +192,12 @@ class TestInitializer(PluginTest):
         # validation
         fake_path.assert_called_with()
         fake_pmon.add.assert_any_call(fake_path(), self.plugin.certificate_changed)
-        fake_pmon.add.assert_any_call(self.plugin.REPOSITORY_PATH, self.plugin.send_enabled_report)
         fake_pmon.start.assert_called_with()
         fake_validate.assert_called_with()
 
     @patch('katello.agent.katelloplugin.update_settings')
-    @patch('katello.agent.katelloplugin.send_enabled_report')
     @patch('katello.agent.katelloplugin.validate_registration')
-    def test_registered(self, validate, send_enabled_report, update_settings):
+    def test_registered(self, validate, update_settings):
 
         # test
         self.plugin.init_plugin()
@@ -275,7 +205,6 @@ class TestInitializer(PluginTest):
         # validation
         validate.assert_called_with()
         update_settings.assert_called_with()
-        send_enabled_report.assert_called_with()
         self.assertFalse(self.plugin.plugin.attach.called)
 
     @patch('katello.agent.katelloplugin.update_settings')
@@ -365,69 +294,6 @@ class TestConduit(PluginTest):
         self.assertFalse(cancelled)
         self.assertTrue(mock_context.cancelled.called)
 
-
-class TestEnabledReport(PluginTest):
-
-    def test_find_enabled(self):
-        repo_path = self.plugin.REPOSITORY_PATH
-        mock_yb = Mock()
-        mock_yb.repos.listEnabled.return_value = [
-            Repository('A', None, None),
-            Repository('B', repo_path, 'redhat.com/B'),
-            Repository('C', '/other.repo', 'other.com/C'),
-            Repository('D', repo_path, 'redhat.com/D')
-        ]
-
-        # test
-        enabled = self.plugin.EnabledReport.find_enabled(mock_yb, os.path.basename(repo_path))
-
-        # validation
-        self.assertEqual(
-            enabled,
-            {'repos': [
-                {'baseurl': 'redhat.com/B', 'repositoryid': 'B'},
-                {'baseurl': 'redhat.com/D', 'repositoryid': 'D'}
-            ]})
-
-    @patch('katello.agent.katelloplugin.Yum')
-    @patch('katello.agent.katelloplugin.EnabledReport.find_enabled')
-    def test_generate(self, fake_find, fake_yum):
-        path = '/tmp/path'
-        fake_find.return_value = [1, 2, 3]
-
-        # test
-        report = self.plugin.EnabledReport.generate(path)
-
-        # validation
-        fake_find.assert_called_with(fake_yum(), path)
-        fake_yum.assert_called_with()
-        fake_yum().close.assert_called_with()
-        self.assertEqual(report, {'enabled_repos': fake_find.return_value})
-
-    @patch('katello.agent.katelloplugin.EnabledReport.generate')
-    def test_construction(self, fake_generate):
-        path = '/tmp/path/test'
-        content = '1234'
-        fake_generate.return_value = content
-
-        # test
-        report = self.plugin.EnabledReport(path)
-
-        # validation
-        fake_generate.assert_called_with(os.path.basename(path))
-        self.assertEqual(report.content, content)
-
-    @patch('katello.agent.katelloplugin.EnabledReport.generate')
-    def test_tostr(self, fake_generate):
-        content = 'ABCDEF'
-        fake_generate.return_value = content
-        # test
-        report = self.plugin.EnabledReport('')
-
-        # validation
-        self.assertEqual(str(report), content)
-
-
 class TestYum(PluginTest):
 
     @patch('katello.agent.katelloplugin.Logger.manager')
@@ -481,21 +347,6 @@ class TestUEP(PluginTest):
 
         # validation
         fake_conn_init.assert_called_with(uep, key_file=key_path, cert_file=cert_path)
-
-    @patch('rhsm.connection.Restlib', Mock())
-    def test_report_enabled(self):
-        consumer_id = '1234'
-        report = Mock()
-
-        # test
-        uep = self.plugin.UEP()
-        uep.conn = Mock()
-        uep.report_enabled(consumer_id, report)
-
-        # validation
-        method = '/systems/%s/enabled_repos' % consumer_id
-        uep.conn.request_put.assert_called_with(method, report)
-
 
 class TestValidateRegistration(PluginTest):
 

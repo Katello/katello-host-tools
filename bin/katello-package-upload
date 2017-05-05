@@ -14,12 +14,21 @@
 #
 
 import sys
-sys.path.append('/usr/lib/yum-plugins')
+import argparse
 
+sys.path.append('/usr/lib/yum-plugins')
 import package_upload
+
+def parse_args():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-f', '--force', help="Force package upload even if it does not seem out of date.", action='store_true')
+  return parser.parse_args()
 
 
 def main():
+    args = parse_args()
+    if args.force:
+        package_upload.remove_cache()
     package_upload.upload_package_profile()
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@
 #
 
 import sys
+import os
 sys.path.append('/usr/share/rhsm')
 
 from yum.plugins import PluginYumExit, TYPE_CORE, TYPE_INTERACTIVE
@@ -34,8 +35,16 @@ try:
 except ImportError:
     pass
 
+CACHE_FILE = '/var/lib/rhsm/packages/packages.json'
+
 requires_api_version = '2.3'
 plugin_type = (TYPE_CORE, TYPE_INTERACTIVE)
+
+def remove_cache():
+    try:
+        os.remove(CACHE_FILE)
+    except OSError:
+        pass
 
 def upload_package_profile():
     uep = connection.UEPConnection(cert_file=ConsumerIdentity.certpath(),
