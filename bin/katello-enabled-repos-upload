@@ -1,0 +1,24 @@
+#!/usr/bin/python
+
+import sys
+import argparse
+
+sys.path.append('/usr/lib/yum-plugins')
+
+import enabled_repos_upload
+from enabled_repos_upload import EnabledRepoCache
+
+def parse_args():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-f', '--force', help="Force enabled repository upload even if it does not seem out of date.", action='store_true')
+  return parser.parse_args()
+
+def main():
+    args = parse_args()
+    if args.force:
+        EnabledRepoCache.remove_cache()
+    enabled_repos_upload.upload_enabled_repos_report()
+
+if __name__ == "__main__":
+    main()
+
