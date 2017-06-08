@@ -17,6 +17,7 @@ Provides content management APIs for pulp within the RHSM environment.
 """
 
 import os
+import socket
 import sys
 import httplib
 
@@ -164,7 +165,16 @@ def update_settings():
        log.info('Using %s as the ca cert for qpid connection' % existing_ca_certs[0])
 
     plugin.cfg.messaging.cacert = existing_ca_certs[0]
-    plugin.cfg.messaging.url = 'proton+amqps://%s:5647' % rhsm_conf['server']['hostname']
+
+    if os.path.isdir('/etc/capsule-installer'):
+        log.info('Host is a capsule')
+        messaging_server = socket.fqdn()
+    else:
+        log.info('Host is a normal client')
+        messaging_server = rhsm_conf['server']['hostname']
+
+    log.info('Messaging server is %s' % messaging_server)
+    plugin.cfg.messaging.url = 'proton+amqps://%s:5647' % messaging_server
     plugin.cfg.messaging.uuid = 'pulp.agent.%s' % certificate.getConsumerId()
     bundle(certificate)
 
