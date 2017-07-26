@@ -1,6 +1,9 @@
 import sys
 import os
-import json
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 from yum import YumBase
 sys.path.append('/usr/share/rhsm')
@@ -98,7 +101,7 @@ class UEP(UEPConnection):
         method = '/systems/%s/enabled_repos' % self.sanitize(consumer_id)
         try:
             self.conn.request_put(method, report)
-        except (RemoteServerException, GoneException) as e:
+        except (RemoteServerException, GoneException), e:
             error_message(str(e))
 
 class EnabledReport(object):
