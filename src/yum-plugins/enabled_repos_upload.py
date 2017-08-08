@@ -164,7 +164,7 @@ class EnabledReport(object):
         return str(self.content)
 
 def close_hook(conduit):
-    conduit.info(2, "Uploading Enabled Reposistories Report")
+    conduit.info(2, "Uploading Enabled Repositories Report")
     try:
         upload_enabled_repos_report()
     except:
