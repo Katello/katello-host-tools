@@ -164,9 +164,11 @@ class EnabledReport(object):
         return str(self.content)
 
 def close_hook(conduit):
-    conduit.info(2, "Uploading Enabled Repositories Report")
+    if not conduit.confBool("main", "supress_debug"):
+        conduit.info(2, "Uploading Enabled Repositories Report")
     try:
         upload_enabled_repos_report()
     except:
-        conduit.error(2, "Unable to upload Enabled Repositories Report")
+        if not conduit.confBool("main", "supress_errors"):
+            conduit.error(2, "Unable to upload Enabled Repositories Report")
 

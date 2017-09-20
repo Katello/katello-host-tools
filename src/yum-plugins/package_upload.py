@@ -62,9 +62,11 @@ def get_manager():
     return mgr
 
 def posttrans_hook(conduit):
-    conduit.info(2, "Uploading Package Profile")
+    if not conduit.confBool("main", "supress_debug"):
+        conduit.info(2, "Uploading Package Profile")
     try:
         upload_package_profile()
     except:
-        conduit.error(2, "Unable to upload Package Profile")
+        if not conduit.confBool("main", "supress_errors"):
+            conduit.error(2, "Unable to upload Package Profile")
 
