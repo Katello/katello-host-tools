@@ -66,8 +66,10 @@ def upload_tracer_profile(conduit=False):
     response = conn.getresponse()
 
 def posttrans_hook(conduit):
-    conduit.info(2, "Uploading Tracer Profile")
+    if not conduit.confBool("main", "supress_debug"):
+        conduit.info(2, "Uploading Tracer Profile")
     try:
         upload_tracer_profile(conduit)
     except:
-        conduit.error(2, "Unable to upload Tracer Profile")
+        if not conduit.confBool("main", "supress_errors"):
+            conduit.error(2, "Unable to upload Tracer Profile")
