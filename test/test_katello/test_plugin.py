@@ -15,13 +15,14 @@ import os
 import sys
 import httplib
 
-from unittest import TestCase
-
 from mock import patch, Mock
 
 from rhsm.connection import RemoteServerException
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../src'))
+from unittest import TestCase
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/yum-plugins'))
 
 
 class Repository(object):
@@ -293,42 +294,6 @@ class TestConduit(PluginTest):
         # validation
         self.assertFalse(cancelled)
         self.assertTrue(mock_context.cancelled.called)
-
-class TestYum(PluginTest):
-
-    @patch('katello.agent.katelloplugin.Logger.manager')
-    def test_clean_loggers(self, fake_manager):
-        lg1 = Mock(name='lg1')
-        lg1.handlers = [Mock(), Mock()]
-        lg2 = Mock(name='lg2')
-        lg2.handlers = [Mock(), Mock()]
-
-        fake_manager.loggerDict = {
-            'xyz.mod': lg1,
-            'yum.mod': lg2
-        }
-
-        # test
-        yb = self.plugin.Yum()
-        yb.cleanLoggers()
-
-        # validation
-        self.assertFalse(lg1.removeHandler.called)
-        self.assertEqual(lg2.removeHandler.call_count, len(lg2.handlers))
-        for h in lg2.handlers:
-            lg2.removeHandler.assert_any_call(h)
-
-    @patch('katello.agent.katelloplugin.Yum.cleanLoggers')
-    @patch('katello.agent.katelloplugin.YumBase.close')
-    def test_close(self, fake_close, fake_clean):
-        # test
-
-        yb = self.plugin.Yum()
-        yb.close()
-
-        # validation
-        fake_close.assert_called_with(yb)
-        fake_clean.assert_called_with()
 
 
 class TestUEP(PluginTest):

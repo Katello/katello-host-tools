@@ -17,7 +17,7 @@ import sys
 import optparse
 
 sys.path.append('/usr/lib/yum-plugins')
-import package_upload
+from katello.packages import purge_package_cache, upload_package_profile
 
 def parse_args():
   parser = optparse.OptionParser()
@@ -28,9 +28,8 @@ def parse_args():
 def main():
     (options, args) = parse_args()
     if options.force:
-        package_upload.remove_cache()
-    package_upload.upload_package_profile()
+        purge_package_cache()
+    upload_package_profile()
 
 if __name__ == "__main__":
     main()
-

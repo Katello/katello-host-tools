@@ -16,27 +16,10 @@ from os import readlink, getppid, environ
 from os.path import basename
 import sys
 import logging
-sys.path.append('/usr/share/rhsm')
+
+from katello.packages import upload_package_profile
 
 from zypp_plugin import Plugin
-
-try:
-  from subscription_manager import action_client
-except ImportError:
-  from subscription_manager import certmgr
-
-try:
-  from subscription_manager.identity import ConsumerIdentity
-except ImportError:
-  from subscription_manager.certlib import ConsumerIdentity
-
-from rhsm import connection
-
-try:
-    from subscription_manager.injectioninit import init_dep_injection
-    init_dep_injection()
-except ImportError:
-    pass
 
 class KatelloZyppPlugin(Plugin):
 
@@ -69,23 +52,6 @@ class KatelloZyppPlugin(Plugin):
         return {}
 
 
-    def upload_package_profile(self):
-	uep = connection.UEPConnection(cert_file=ConsumerIdentity.certpath(),
-				       key_file=ConsumerIdentity.keypath())
-	self.get_manager().profilelib._do_update()
-
-
-    def get_manager(self):
-	if 'subscription_manager.action_client' in sys.modules:
-	    mgr = action_client.ActionClient()
-	else:
-	    # for compatability with subscription-manager > =1.13
-	    uep = connection.UEPConnection(cert_file=ConsumerIdentity.certpath(),
-					    key_file=ConsumerIdentity.keypath())
-	    mgr = certmgr.CertManager(uep=uep)
-	return mgr
-
-
     def PLUGINBEGIN(self, headers, body):
 
         logging.info("PLUGINBEGIN")
@@ -116,7 +82,7 @@ class KatelloZyppPlugin(Plugin):
 	logging.info("Uploading Package Profile")
 
 	try:
-	    self.upload_package_profile()
+	    upload_package_profile()
 	except:
 	    logging.error("Unable to upload Package Profile")
 
@@ -136,4 +102,3 @@ else:
 
     plugin = KatelloZyppPlugin()
     plugin.main()
-

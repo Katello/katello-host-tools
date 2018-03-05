@@ -1,26 +1,23 @@
 import os
 import sys
-import httplib
-
-from unittest import TestCase
 
 from mock import patch, Mock
 
-from rhsm.connection import RemoteServerException
+from unittest import TestCase
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/yum-plugins/'))
-
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/yum-plugins'))
 import enabled_repos_upload
-from enabled_repos_upload import UEP
+
 
 FAKE_REPORT = {'foobar': 1}
 
 class TestSendEnabledReport(TestCase):
     @patch('enabled_repos_upload.EnabledReport')
-    @patch('enabled_repos_upload.ConsumerIdentity.read')
-    @patch('enabled_repos_upload.UEP.report_enabled')
-    @patch('enabled_repos_upload.EnabledRepoCache.is_valid')
-    @patch('enabled_repos_upload.EnabledRepoCache.save')
+    @patch('katello.uep.ConsumerIdentity.read')
+    @patch('katello.repos.report_enabled_repos')
+    @patch('katello.repos.EnabledRepoCache.is_valid')
+    @patch('katello.repos.EnabledRepoCache.save')
     def test_send(self, cache_save, cache_valid, fake_report_enabled, fake_read, fake_report):
         consumer_id = '1234'
         fake_certificate = Mock()
@@ -32,18 +29,17 @@ class TestSendEnabledReport(TestCase):
         fake_report.return_value = report
         report.content = FAKE_REPORT
 
-        enabled_repos_upload.upload_enabled_repos_report()
+        enabled_repos_upload.upload_enabled_repos_report(report)
 
         # validation
-        fake_report.assert_called_with('/etc/yum.repos.d/redhat.repo')
         fake_certificate.getConsumerId.assert_called_with()
         fake_report_enabled.assert_called_with(consumer_id, FAKE_REPORT)
 
     @patch('enabled_repos_upload.EnabledReport')
-    @patch('enabled_repos_upload.ConsumerIdentity.read')
-    @patch('enabled_repos_upload.UEP.report_enabled')
-    @patch('enabled_repos_upload.EnabledRepoCache.is_valid')
-    @patch('enabled_repos_upload.EnabledRepoCache.save')
+    @patch('katello.uep.ConsumerIdentity.read')
+    @patch('katello.repos.report_enabled_repos')
+    @patch('katello.repos.EnabledRepoCache.is_valid')
+    @patch('katello.repos.EnabledRepoCache.save')
     def test_cached(self, cache_save, cache_valid, fake_report_enabled, fake_read, fake_report):
         consumer_id = '1234'
         fake_certificate = Mock()
@@ -55,9 +51,43 @@ class TestSendEnabledReport(TestCase):
         fake_report.return_value = report
         report.content = FAKE_REPORT
 
-        enabled_repos_upload.upload_enabled_repos_report()
+        enabled_repos_upload.upload_enabled_repos_report(report)
 
         # validation
-        fake_report.assert_called_with('/etc/yum.repos.d/redhat.repo')
         fake_certificate.getConsumerId.assert_called_with()
         fake_report_enabled.assert_not_called()
+
+class TestYum(TestCase):
+
+    @patch('enabled_repos_upload.Logger.manager')
+    def test_clean_loggers(self, fake_manager):
+        lg1 = Mock(name='lg1')
+        lg1.handlers = [Mock(), Mock()]
+        lg2 = Mock(name='lg2')
+        lg2.handlers = [Mock(), Mock()]
+
+        fake_manager.loggerDict = {
+            'xyz.mod': lg1,
+            'yum.mod': lg2
+        }
+
+        # test
+        yb = enabled_repos_upload.Yum()
+        yb.cleanLoggers()
+
+        # validation
+        self.assertFalse(lg1.removeHandler.called)
+        self.assertEqual(lg2.removeHandler.call_count, len(lg2.handlers))
+        for h in lg2.handlers:
+            lg2.removeHandler.assert_any_call(h)
+
+    @patch('enabled_repos_upload.Yum.cleanLoggers')
+    @patch('enabled_repos_upload.YumBase.close')
+    def test_close(self, fake_close, fake_clean):
+        # test
+        yb = enabled_repos_upload.Yum()
+        yb.close()
+
+        # validation
+        fake_close.assert_called_with(yb)
+        fake_clean.assert_called_with()
