@@ -5,8 +5,10 @@ import optparse
 
 sys.path.append('/usr/lib/yum-plugins')
 
-import enabled_repos_upload
-from enabled_repos_upload import EnabledRepoCache
+from enabled_repos_upload import EnabledReport
+from katello.constants import REPOSITORY_PATH
+from katello.repos import EnabledRepoCache, upload_enabled_repos_report
+
 
 def parse_args():
   parser = optparse.OptionParser()
@@ -17,7 +19,8 @@ def main():
     (options, args) = parse_args()
     if options.force:
         EnabledRepoCache.remove_cache()
-    enabled_repos_upload.upload_enabled_repos_report()
+    report = EnabledReport(REPOSITORY_PATH)
+    upload_enabled_repos_report(report)
 
 if __name__ == "__main__":
     main()

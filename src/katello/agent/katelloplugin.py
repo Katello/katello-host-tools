@@ -23,10 +23,11 @@ import httplib
 sys.path.append('/usr/share/rhsm')
 sys.path.append('/usr/lib/yum-plugins')
 
-from yum import YumBase
 from time import sleep
-from logging import getLogger, Logger
+from logging import getLogger
 from subprocess import Popen
+
+from katello.constants import REPOSITORY_PATH
 
 from gofer.decorators import initializer, remote, action
 from gofer.agent.plugin import Plugin
@@ -61,8 +62,6 @@ log = getLogger(__name__)
 
 
 RHSM_CONFIG_PATH = '/etc/rhsm/rhsm.conf'
-
-REPOSITORY_PATH = '/etc/yum.repos.d/redhat.repo'
 
 
 @initializer
@@ -122,7 +121,7 @@ def certificate_changed(path):
             validate_registration()
             if registered:
                 update_settings()
-                enabled_repos_upload.upload_enabled_repos_report()
+                send_enabled_report()
                 plugin.attach()
             else:
                 plugin.detach()
@@ -133,7 +132,8 @@ def certificate_changed(path):
             sleep(60)
 
 def send_enabled_report(path=REPOSITORY_PATH):
-    enabled_repos_upload.upload_enabled_repos_report()
+    report = enabled_repos_upload.EnabledReport(path)
+    enabled_repos_upload.upload_enabled_repos_report(report)
 
 def update_settings():
     """
@@ -286,31 +286,6 @@ class Conduit(HandlerConduit):
         """
         context = Context.current()
         return context.cancelled()
-
-class Yum(YumBase):
-    """
-    Provides custom configured yum object.
-    """
-
-    def cleanLoggers(self):
-        """
-        Clean handlers leaked by yum.
-        """
-        for n, lg in Logger.manager.loggerDict.items():
-            if not n.startswith('yum.'):
-                continue
-            for h in lg.handlers:
-                lg.removeHandler(h)
-
-    def close(self):
-        """
-        This should be handled by __del__() but YumBase
-        objects never seem to completely go out of scope and
-        garbage collected.
-        """
-        YumBase.close(self)
-        self.closeRpmDB()
-        self.cleanLoggers()
 
 class UEP(UEPConnection):
     """
