@@ -3,12 +3,11 @@ USE_SELINUX=$(shell test -d /sys/fs/selinux && echo ":Z")
 
 test-python3:
 	pip3 install -r test-requirements.txt --user
-	python3 -m unittest discover ./test/dnf_plugins
+	python3 -m unittest discover -s test/
 
 test-python2:
 	pip install -r test-requirements.txt --user
-	python -m unittest discover ./test/test_yum_plugins
-	python -m unittest discover ./test/test_katello
+	python2 test/python2_suite.py
 
 test: $(addprefix test-,$(TEST_TARGETS))
 	flake8 --ignore E501 ./bin/* src/ || true
