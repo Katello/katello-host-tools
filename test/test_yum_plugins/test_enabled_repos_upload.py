@@ -2,8 +2,7 @@ import os
 import sys
 
 from mock import patch, Mock
-
-from unittest import TestCase
+import unittest2 as unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/yum-plugins'))
@@ -12,7 +11,7 @@ import enabled_repos_upload
 
 FAKE_REPORT = {'foobar': 1}
 
-class TestSendEnabledReport(TestCase):
+class TestSendEnabledReport(unittest.TestCase):
     @patch('enabled_repos_upload.EnabledReport')
     @patch('katello.uep.ConsumerIdentity.read')
     @patch('katello.repos.report_enabled_repos')
@@ -57,7 +56,8 @@ class TestSendEnabledReport(TestCase):
         fake_certificate.getConsumerId.assert_called_with()
         fake_report_enabled.assert_not_called()
 
-class TestYum(TestCase):
+@unittest.skipIf(sys.version_info[0] > 2, "No python3 yum")
+class TestYum(unittest.TestCase):
 
     @patch('enabled_repos_upload.Logger.manager')
     def test_clean_loggers(self, fake_manager):

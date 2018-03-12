@@ -1,5 +1,5 @@
 from configparser import ConfigParser
-from unittest import TestCase
+from unittest2 import TestCase
 
 import dnf.cli.option_parser
 

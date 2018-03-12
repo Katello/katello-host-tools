@@ -13,17 +13,20 @@
 
 import os
 import sys
-import httplib
+
+try:
+    import httplib
+except ImportError:
+    pass
 
 from mock import patch, Mock
 
 from rhsm.connection import RemoteServerException
 
-from unittest import TestCase
+import unittest2 as unittest
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/katello/agent'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/yum-plugins'))
-
 
 class Repository(object):
 
@@ -33,11 +36,12 @@ class Repository(object):
         self.baseurl = baseurl
 
 
-class PluginTest(TestCase):
+@unittest.skipIf(sys.version_info[0] > 2, "katello-agent plugin doesn't support PY3 yet")
+class PluginTest(unittest.TestCase):
 
     @staticmethod
     def load_plugin():
-        plugin = __import__('katello.agent.katelloplugin', {}, {}, ['katelloplugin'])
+        plugin = __import__('katelloplugin', {}, {}, ['katelloplugin'])
         reload(plugin)
         plugin._module = plugin
         plugin_cfg = Mock()
