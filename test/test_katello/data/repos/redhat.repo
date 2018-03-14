@@ -1,0 +1,23 @@
+[enabled]
+metadata_expire = 86400
+baseurl = https://enabled_repo.com
+ui_repoid_vars = basearch
+sslverify = 1
+name = Enabled Repo
+sslclientkey = /etc/pki/entitlement/3994-key.pem
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+enabled = 1
+sslcacert = /etc/rhsm/ca/redhat-uep.pem
+gpgcheck = 1
+
+[disabled]
+metadata_expire = 86400
+baseurl = https://disabled_repo.com
+ui_repoid_vars = basearch
+sslverify = 1
+name = Enabled Repo
+sslclientkey = /etc/pki/entitlement/3994-key.pem
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+enabled = 0
+sslcacert = /etc/rhsm/ca/redhat-uep.pem
+gpgcheck = 1

@@ -31,7 +31,7 @@ class KatelloZyppPlugin(Plugin):
         self.userdata = {}
 
 
-    def parse_userdata(self, s): 
+    def parse_userdata(self, s):
         userdata = {}
         for kv in s.split(","):
             k, v = kv.split("=", 1)
@@ -53,39 +53,16 @@ class KatelloZyppPlugin(Plugin):
 
 
     def PLUGINBEGIN(self, headers, body):
-
-        logging.info("PLUGINBEGIN")
-
-        logging.debug("headers: %s" % headers)
-
         self.description = "zypp(%s)" % basename(readlink("/proc/%d/exe" % getppid()))
         self.userdata = self.get_userdata(headers)
-
-        self.ack()
-
-
-    def COMMITBEGIN(self, headers, body):
-
-        logging.info("COMMITBEGIN")
-        self.ack()
-
-
-    def COMMITEND(self, headers, body):
-
-        logging.info("COMMITEND")
         self.ack()
 
     def PLUGINEND(self, headers, body):
-
-        logging.info("PLUGINEND")
-
-	logging.info("Uploading Package Profile")
-
-	try:
-	    upload_package_profile()
-	except:
-	    logging.error("Unable to upload Package Profile")
-
+        logging.info("Uploading Package Profile")
+        try:
+            upload_package_profile()
+        except:
+            logging.error("Unable to upload Package Profile")
         self.ack()
 
 
@@ -97,8 +74,6 @@ if "DISABLE_KATELLO_ZYPP_PLUGIN" in environ:
     # Plugin so that zypper still works.
     plugin = Plugin()
     plugin.main()
-
 else:
-
     plugin = KatelloZyppPlugin()
     plugin.main()

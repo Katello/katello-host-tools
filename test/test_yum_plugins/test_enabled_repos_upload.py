@@ -55,39 +55,3 @@ class TestSendEnabledReport(unittest.TestCase):
         # validation
         fake_certificate.getConsumerId.assert_called_with()
         fake_report_enabled.assert_not_called()
-
-@unittest.skipIf(sys.version_info[0] > 2, "No python3 yum")
-class TestYum(unittest.TestCase):
-
-    @patch('enabled_repos_upload.Logger.manager')
-    def test_clean_loggers(self, fake_manager):
-        lg1 = Mock(name='lg1')
-        lg1.handlers = [Mock(), Mock()]
-        lg2 = Mock(name='lg2')
-        lg2.handlers = [Mock(), Mock()]
-
-        fake_manager.loggerDict = {
-            'xyz.mod': lg1,
-            'yum.mod': lg2
-        }
-
-        # test
-        yb = enabled_repos_upload.Yum()
-        yb.cleanLoggers()
-
-        # validation
-        self.assertFalse(lg1.removeHandler.called)
-        self.assertEqual(lg2.removeHandler.call_count, len(lg2.handlers))
-        for h in lg2.handlers:
-            lg2.removeHandler.assert_any_call(h)
-
-    @patch('enabled_repos_upload.Yum.cleanLoggers')
-    @patch('enabled_repos_upload.YumBase.close')
-    def test_close(self, fake_close, fake_clean):
-        # test
-        yb = enabled_repos_upload.Yum()
-        yb.close()
-
-        # validation
-        fake_close.assert_called_with(yb)
-        fake_clean.assert_called_with()
