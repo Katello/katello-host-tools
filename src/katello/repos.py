@@ -1,6 +1,7 @@
 import errno
 import os
 import sys
+import os.path
 
 from katello.constants import ENABLED_REPOS_CACHE_FILE
 from katello.uep import get_uep, lookup_consumer_id
