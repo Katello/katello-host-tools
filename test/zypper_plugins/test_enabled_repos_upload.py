@@ -11,7 +11,7 @@ if sys.version_info[0]  == 2:
 try:
     sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
     sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/zypper_plugins'))
-    import zypper_enabled_repos_upload
+    import enabled_repos_upload
 except:
   pass
 
@@ -19,9 +19,9 @@ except:
 class TestEnabledReposUpload(TestCase):
     def setUp(self):
         self.parser = ConfigParser()
-        self.plugin = zypper_enabled_repos_upload.EnabledReposUpload()
+        self.plugin = enabled_repos_upload.EnabledReposUpload()
 
-    @patch('zypper_enabled_repos_upload.upload_enabled_repos_report')
+    @patch('enabled_repos_upload.upload_enabled_repos_report')
     def test_plugin_enabled(self, upload_report):
         self.parser.add_section('main')
         self.parser.set('main', 'enabled', 'True')
