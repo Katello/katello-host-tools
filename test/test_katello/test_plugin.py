@@ -41,7 +41,7 @@ class PluginTest(unittest.TestCase):
 
     @staticmethod
     def load_plugin():
-        plugin = __import__('katelloplugin', {}, {}, ['katelloplugin'])
+        plugin = __import__('katello.agent.goferd.plugin', {}, {}, ['katello.agent.goferd.plugin'])
         reload(plugin)
         plugin._module = plugin
         plugin_cfg = Mock()
@@ -81,8 +81,8 @@ class TestBundle(PluginTest):
 
 class TestCertificateChanged(PluginTest):
 
-    @patch('katello.agent.katelloplugin.update_settings')
-    @patch('katello.agent.katelloplugin.validate_registration')
+    @patch('katello.agent.goferd.plugin.update_settings')
+    @patch('katello.agent.goferd.plugin.validate_registration')
     def test_registered(self, validate, update_settings):
 
         # test
@@ -93,8 +93,8 @@ class TestCertificateChanged(PluginTest):
         update_settings.assert_called_with()
         self.plugin.plugin.attach.assert_called_with()
 
-    @patch('katello.agent.katelloplugin.update_settings')
-    @patch('katello.agent.katelloplugin.validate_registration')
+    @patch('katello.agent.goferd.plugin.update_settings')
+    @patch('katello.agent.goferd.plugin.validate_registration')
     def test_run_not_registered(self, validate, update_settings):
         self.plugin.registered = False
 
@@ -106,9 +106,9 @@ class TestCertificateChanged(PluginTest):
         self.assertFalse(update_settings.called)
         self.plugin.plugin.detach.assert_called_with()
 
-    @patch('katello.agent.katelloplugin.sleep')
-    @patch('katello.agent.katelloplugin.update_settings')
-    @patch('katello.agent.katelloplugin.validate_registration')
+    @patch('katello.agent.goferd.plugin.sleep')
+    @patch('katello.agent.goferd.plugin.update_settings')
+    @patch('katello.agent.goferd.plugin.validate_registration')
     def test_run_validate_failed(self, validate, update_settings, sleep):
         validate.side_effect = [ValueError, None]
 
@@ -125,9 +125,9 @@ class TestUpdateSettings(PluginTest):
     host = 'redhat.com'
     server_ca_cert = '%(ca_cert_dir)skatello-server-ca.pem'
 
-    @patch('katello.agent.katelloplugin.bundle')
-    @patch('katello.agent.katelloplugin.Config')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
+    @patch('katello.agent.goferd.plugin.bundle')
+    @patch('katello.agent.goferd.plugin.Config')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.read')
     def test_call_new(self, fake_read, fake_conf, fake_bundle):
         fake_conf.return_value = {
             'server': {
@@ -140,9 +140,9 @@ class TestUpdateSettings(PluginTest):
         }
         self.call(fake_read, fake_conf, fake_bundle)
 
-    @patch('katello.agent.katelloplugin.bundle')
-    @patch('katello.agent.katelloplugin.Config')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
+    @patch('katello.agent.goferd.plugin.bundle')
+    @patch('katello.agent.goferd.plugin.Config')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.read')
     def test_call_old_config(self, fake_read, fake_conf, fake_bundle):
         fake_conf.return_value = {
             'server': {
@@ -185,9 +185,9 @@ class TestUpdateSettings(PluginTest):
 
 class TestInitializer(PluginTest):
 
-    @patch('katello.agent.katelloplugin.path_monitor')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.certpath')
-    @patch('katello.agent.katelloplugin.validate_registration')
+    @patch('katello.agent.goferd.plugin.path_monitor')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.certpath')
+    @patch('katello.agent.goferd.plugin.validate_registration')
     def test_init(self, fake_validate, fake_path, fake_pmon):
         self.plugin.registered = False
 
@@ -200,8 +200,8 @@ class TestInitializer(PluginTest):
         fake_pmon.start.assert_called_with()
         fake_validate.assert_called_with()
 
-    @patch('katello.agent.katelloplugin.update_settings')
-    @patch('katello.agent.katelloplugin.validate_registration')
+    @patch('katello.agent.goferd.plugin.update_settings')
+    @patch('katello.agent.goferd.plugin.validate_registration')
     def test_registered(self, validate, update_settings):
 
         # test
@@ -212,8 +212,8 @@ class TestInitializer(PluginTest):
         update_settings.assert_called_with()
         self.assertFalse(self.plugin.plugin.attach.called)
 
-    @patch('katello.agent.katelloplugin.update_settings')
-    @patch('katello.agent.katelloplugin.validate_registration')
+    @patch('katello.agent.goferd.plugin.update_settings')
+    @patch('katello.agent.goferd.plugin.validate_registration')
     def test_run_not_registered(self, validate, update_settings):
         self.plugin.registered = False
 
@@ -225,9 +225,9 @@ class TestInitializer(PluginTest):
         self.assertFalse(update_settings.called)
         self.assertFalse(self.plugin.plugin.attach.called)
 
-    @patch('katello.agent.katelloplugin.sleep')
-    @patch('katello.agent.katelloplugin.update_settings')
-    @patch('katello.agent.katelloplugin.validate_registration')
+    @patch('katello.agent.goferd.plugin.sleep')
+    @patch('katello.agent.goferd.plugin.update_settings')
+    @patch('katello.agent.goferd.plugin.validate_registration')
     def test_run_validate_failed(self, validate, update_settings, sleep):
         validate.side_effect = [ValueError, None]
 
@@ -241,70 +241,11 @@ class TestInitializer(PluginTest):
         self.assertFalse(self.plugin.plugin.attach.called)
 
 
-class TestConduit(PluginTest):
-
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    def test_consumer_id(self, fake_read):
-        consumer_id = '1234'
-        fake_certificate = Mock()
-        fake_certificate.getConsumerId.return_value = consumer_id
-        fake_read.return_value = fake_certificate
-
-        # test
-        conduit = self.plugin.Conduit()
-
-        # validation
-        self.assertEqual(conduit.consumer_id, consumer_id)
-
-    @patch('gofer.agent.rmi.Context.current')
-    def test_update_progress(self, mock_current):
-        mock_context = Mock()
-        mock_context.progress = Mock()
-        mock_current.return_value = mock_context
-        conduit = self.plugin.Conduit()
-        report = {'a': 1}
-
-        # test
-        conduit.update_progress(report)
-
-        # validation
-        # Reporting disabled
-        self.assertFalse(mock_context.progress.report.called)
-
-    @patch('gofer.agent.rmi.Context.current')
-    def test_cancelled(self, mock_current):
-        mock_context = Mock()
-        mock_context.cancelled = Mock(return_value=True)
-        mock_current.return_value = mock_context
-        conduit = self.plugin.Conduit()
-
-        # test
-        cancelled = conduit.cancelled()
-
-        # validation
-        self.assertTrue(cancelled)
-        self.assertTrue(mock_context.cancelled.called)
-
-    @patch('gofer.agent.rmi.Context.current')
-    def test_cancelled(self, mock_current):
-        mock_context = Mock()
-        mock_context.cancelled = Mock(return_value=False)
-        mock_current.return_value = mock_context
-        conduit = self.plugin.Conduit()
-
-        # test
-        cancelled = conduit.cancelled()
-
-        # validation
-        self.assertFalse(cancelled)
-        self.assertTrue(mock_context.cancelled.called)
-
-
 class TestUEP(PluginTest):
 
-    @patch('katello.agent.katelloplugin.UEPConnection.__init__')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.certpath')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.keypath')
+    @patch('katello.agent.goferd.plugin.UEPConnection.__init__')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.certpath')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.keypath')
     def test_construction(self, fake_keypath, fake_certpath, fake_conn_init):
         key_path = '/tmp/keypath'
         cert_path = '/tmp/crtpath'
@@ -319,9 +260,9 @@ class TestUEP(PluginTest):
 
 class TestValidateRegistration(PluginTest):
 
-    @patch('katello.agent.katelloplugin.UEP.getConsumer')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
+    @patch('katello.agent.goferd.plugin.UEP.getConsumer')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.read')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.existsAndValid')
     def test_validate_registration(self, valid, read, get_consumer):
         consumer_id = '1234'
         valid.return_value = True
@@ -334,8 +275,8 @@ class TestValidateRegistration(PluginTest):
         get_consumer.assert_called_with(consumer_id)
         self.assertTrue(self.plugin.registered)
 
-    @patch('katello.agent.katelloplugin.UEP.getConsumer')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
+    @patch('katello.agent.goferd.plugin.UEP.getConsumer')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.existsAndValid')
     def test_validate_registration_no_certificate(self, valid, get_consumer):
         valid.return_value = False
 
@@ -346,9 +287,9 @@ class TestValidateRegistration(PluginTest):
         self.assertFalse(get_consumer.called)
         self.assertFalse(self.plugin.registered)
 
-    @patch('katello.agent.katelloplugin.UEP.getConsumer')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
+    @patch('katello.agent.goferd.plugin.UEP.getConsumer')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.read')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.existsAndValid')
     def test_validate_registration_not_confirmed(self, valid, read, get_consumer):
         consumer_id = '1234'
         valid.return_value = True
@@ -362,9 +303,9 @@ class TestValidateRegistration(PluginTest):
         get_consumer.assert_called_with(consumer_id)
         self.assertFalse(self.plugin.registered)
 
-    @patch('katello.agent.katelloplugin.UEP.getConsumer')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
+    @patch('katello.agent.goferd.plugin.UEP.getConsumer')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.read')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.existsAndValid')
     def test_validate_registration_failed(self, valid, read, get_consumer):
         consumer_id = '1234'
         valid.return_value = True
@@ -378,9 +319,9 @@ class TestValidateRegistration(PluginTest):
         get_consumer.assert_called_with(consumer_id)
         self.assertFalse(self.plugin.registered)
 
-    @patch('katello.agent.katelloplugin.UEP.getConsumer')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.read')
-    @patch('katello.agent.katelloplugin.ConsumerIdentity.existsAndValid')
+    @patch('katello.agent.goferd.plugin.UEP.getConsumer')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.read')
+    @patch('katello.agent.goferd.plugin.ConsumerIdentity.existsAndValid')
     def test_validate_registration_exception(self, valid, read, get_consumer):
         consumer_id = '1234'
         valid.return_value = True
@@ -402,9 +343,8 @@ class TestConsumer(PluginTest):
 
 class TestContent(PluginTest):
 
-    @patch('katello.agent.katelloplugin.Conduit')
-    @patch('katello.agent.katelloplugin.Dispatcher')
-    def test_install(self, mock_dispatcher, mock_conduit):
+    @patch('katello.agent.goferd.plugin.Dispatcher')
+    def test_install(self, mock_dispatcher):
         _report = Mock()
         _report.dict = Mock(return_value={'report': 883938})
         mock_dispatcher().install.return_value = _report
@@ -416,12 +356,11 @@ class TestContent(PluginTest):
         report = content.install(units, options)
 
         # validation
-        mock_dispatcher().install.assert_called_with(mock_conduit(), units, options)
+        mock_dispatcher().install.assert_called_with(units, options)
         self.assertEqual(report, _report.dict())
 
-    @patch('katello.agent.katelloplugin.Conduit')
-    @patch('katello.agent.katelloplugin.Dispatcher')
-    def test_update(self, mock_dispatcher, mock_conduit):
+    @patch('katello.agent.goferd.plugin.Dispatcher')
+    def test_update(self, mock_dispatcher):
         _report = Mock()
         _report.dict = Mock(return_value={'report': 883938})
         mock_dispatcher().update.return_value = _report
@@ -433,12 +372,11 @@ class TestContent(PluginTest):
         report = content.update(units, options)
 
         # validation
-        mock_dispatcher().update.assert_called_with(mock_conduit(), units, options)
+        mock_dispatcher().update.assert_called_with(units, options)
         self.assertEqual(report, _report.dict())
 
-    @patch('katello.agent.katelloplugin.Conduit')
-    @patch('katello.agent.katelloplugin.Dispatcher')
-    def test_uninstall(self, mock_dispatcher, mock_conduit):
+    @patch('katello.agent.goferd.plugin.Dispatcher')
+    def test_uninstall(self, mock_dispatcher):
         _report = Mock()
         _report.dict = Mock(return_value={'report': 883938})
         mock_dispatcher().uninstall.return_value = _report
@@ -450,7 +388,7 @@ class TestContent(PluginTest):
         report = content.uninstall(units, options)
 
         # validation
-        mock_dispatcher().uninstall.assert_called_with(mock_conduit(), units, options)
+        mock_dispatcher().uninstall.assert_called_with(units, options)
         self.assertEqual(report, _report.dict())
 
 
@@ -484,7 +422,7 @@ class TestAgentRestart(PluginTest):
         self.assertFalse(busy)
 
     @patch('os.unlink')
-    @patch('katello.agent.katelloplugin.Popen')
+    @patch('katello.agent.goferd.plugin.Popen')
     def test_restart(self, popen, unlink):
         popen.return_value.wait.return_value = 123
 
