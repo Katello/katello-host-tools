@@ -1,4 +1,7 @@
-*.pyc
+*.py[co]
 *.swp
 *.swo
+src/build
+src/dist
+src/katello_agent.egg-info/
 test/data

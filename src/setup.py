@@ -15,14 +15,7 @@
 # Jeff Ortel <jortel@redhat.com>
 #
 
-from platform import python_version
 from setuptools import setup, find_packages
-
-
-major, minor, micro = python_version().split('.')
-
-if major != '2' or minor not in ['4', '5', '6', '7']:
-    raise Exception('unsupported version of python')
 
 requires = [
 ]
@@ -36,8 +29,7 @@ setup(
     url='',
     license='GPLv2+',
     packages=find_packages(),
-    scripts = [
-    ],
+    scripts=[],
     include_package_data=False,
     data_files=[],
     classifiers=[
