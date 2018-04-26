@@ -1,12 +1,29 @@
+from __future__ import absolute_import
+
+import sys
+
 from katello.uep import get_uep, lookup_consumer_id
+
+try:
+    from tracer.query import Query
+except ImportError:
+    sys.exit('Error Importing tracer! Is tracer installed?')
 
 
 def upload_tracer_profile(queryfunc, plugin):
     uep = get_uep()
+    consumer_id = lookup_consumer_id()
+    if consumer_id is None:
+        sys.stderr.write("Cannot upload tracer data, is this client registered?\n")
+    else:
+        method = '/consumers/%s/tracer' % uep.sanitize(consumer_id)
+        data = {"traces": get_apps(queryfunc, plugin)}
+        uep.conn.request_put(method, data)
 
-    method = '/consumers/%s/tracer' % uep.sanitize(lookup_consumer_id())
-    data = {"traces": get_apps(queryfunc, plugin)}
-    uep.conn.request_put(method, data)
+
+def query_affected_apps(plugin=None):
+    query = Query()
+    return query.affected_applications().get()
 
 
 def get_apps(queryfunc, plugin):
