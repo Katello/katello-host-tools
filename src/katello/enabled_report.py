@@ -13,7 +13,7 @@ class EnabledReport(object):
         config = ConfigParser()
         config.read(self.repofile)
         enabled_sections = [section for section in config.sections() if config.getboolean(section, "enabled")]
-        enabled_repos = [{"repositoryid": section,"baseurl": config.get(section, "baseurl")} for section in enabled_sections]
+        enabled_repos = [{"repositoryid": section,"baseurl": [config.get(section, "baseurl")]} for section in enabled_sections]
         return {"enabled_repos": {"repos": enabled_repos}}
 
     def __init__(self, repo_file = REPOSITORY_PATH):

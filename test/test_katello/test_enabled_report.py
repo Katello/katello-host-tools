@@ -16,7 +16,7 @@ class TestEnabledReport(TestCase):
     def test_valid(self):
         rh_repo = os.path.join(os.path.dirname(__file__), 'data/repos/redhat.repo')
         report = enabled_report.EnabledReport(rh_repo)
-        expected = {'enabled_repos': {'repos': [{'baseurl': 'https://enabled_repo.com',
+        expected = {'enabled_repos': {'repos': [{'baseurl': ['https://enabled_repo.com'],
                                'repositoryid': 'enabled'}]}}
 
         self.assertEqual(expected, report.content)
