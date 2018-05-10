@@ -19,7 +19,6 @@ else
 fi;
 
 if [ ${PYTHON} = "python2" ]; then
-  export PYTHONPATH=src/:src/yum-plugins
   for binary in bin/*; do
     if [[ "${binary}" = "bin/katello-tracer-upload" ]] && ! rpm -q python2-tracer --quiet; then
       continue;
