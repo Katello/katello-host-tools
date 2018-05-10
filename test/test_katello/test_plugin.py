@@ -14,10 +14,7 @@
 import os
 import sys
 
-try:
-    import httplib
-except ImportError:
-    pass
+from six.moves import http_client as httplib
 
 from mock import patch, Mock
 
@@ -26,7 +23,6 @@ from rhsm.connection import RemoteServerException
 import unittest2 as unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/katello/agent'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/yum-plugins'))
 
 class Repository(object):
 
@@ -36,13 +32,11 @@ class Repository(object):
         self.baseurl = baseurl
 
 
-@unittest.skipIf(sys.version_info[0] > 2, "katello-agent plugin doesn't support PY3 yet")
 class PluginTest(unittest.TestCase):
 
     @staticmethod
     def load_plugin():
         plugin = __import__('katello.agent.goferd.plugin', {}, {}, ['katello.agent.goferd.plugin'])
-        reload(plugin)
         plugin._module = plugin
         plugin_cfg = Mock()
         plugin_cfg.messaging = Mock()
@@ -58,9 +52,10 @@ class PluginTest(unittest.TestCase):
         self.plugin = PluginTest.load_plugin()
 
 
+@unittest.skipIf(sys.version_info[0] == 2 and sys.version_info[1] < 7, "goferd plugin requires python 2.7+")
 class TestBundle(PluginTest):
 
-    @patch('__builtin__.open')
+    @patch('katello.agent.goferd.plugin.open')
     def test_bundle(self, fake_open):
         fake_fp = Mock()
         fake_open.return_value = fake_fp
@@ -79,6 +74,7 @@ class TestBundle(PluginTest):
         fake_fp.close.assert_called_with()
 
 
+@unittest.skipIf(sys.version_info[0] == 2 and sys.version_info[1] < 7, "goferd plugin requires python 2.7+")
 class TestCertificateChanged(PluginTest):
 
     @patch('katello.agent.goferd.plugin.update_settings')
@@ -121,6 +117,7 @@ class TestCertificateChanged(PluginTest):
         update_settings.assert_called_with()
         self.plugin.plugin.attach.assert_called_with()
 
+@unittest.skipIf(sys.version_info[0] == 2 and sys.version_info[1] < 7, "goferd plugin requires python 2.7+")
 class TestUpdateSettings(PluginTest):
     host = 'redhat.com'
     server_ca_cert = '%(ca_cert_dir)skatello-server-ca.pem'
@@ -183,6 +180,7 @@ class TestUpdateSettings(PluginTest):
         self.assertEqual(plugin_cfg.messaging.uuid, 'pulp.agent.%s' % consumer_id)
 
 
+@unittest.skipIf(sys.version_info[0] == 2 and sys.version_info[1] < 7, "goferd plugin requires python 2.7+")
 class TestInitializer(PluginTest):
 
     @patch('katello.agent.goferd.plugin.path_monitor')
@@ -241,6 +239,7 @@ class TestInitializer(PluginTest):
         self.assertFalse(self.plugin.plugin.attach.called)
 
 
+@unittest.skipIf(sys.version_info[0] == 2 and sys.version_info[1] < 7, "goferd plugin requires python 2.7+")
 class TestUEP(PluginTest):
 
     @patch('katello.agent.goferd.plugin.UEPConnection.__init__')
@@ -258,6 +257,8 @@ class TestUEP(PluginTest):
         # validation
         fake_conn_init.assert_called_with(uep, key_file=key_path, cert_file=cert_path)
 
+
+@unittest.skipIf(sys.version_info[0] == 2 and sys.version_info[1] < 7, "goferd plugin requires python 2.7+")
 class TestValidateRegistration(PluginTest):
 
     @patch('katello.agent.goferd.plugin.UEP.getConsumer')
@@ -335,12 +336,14 @@ class TestValidateRegistration(PluginTest):
         get_consumer.assert_called_with(consumer_id)
         self.assertFalse(self.plugin.registered)
 
+@unittest.skipIf(sys.version_info[0] == 2 and sys.version_info[1] < 7, "goferd plugin requires python 2.7+")
 class TestConsumer(PluginTest):
 
     def test_unregister(self):
         consumer = self.plugin.Consumer()
         consumer.unregister()
 
+@unittest.skipIf(sys.version_info[0] == 2 and sys.version_info[1] < 7, "goferd plugin requires python 2.7+")
 class TestContent(PluginTest):
 
     @patch('katello.agent.goferd.plugin.Dispatcher')
@@ -392,6 +395,7 @@ class TestContent(PluginTest):
         self.assertEqual(report, _report.dict())
 
 
+@unittest.skipIf(sys.version_info[0] == 2 and sys.version_info[1] < 7, "goferd plugin requires python 2.7+")
 class TestAgentRestart(PluginTest):
 
     @patch('os.listdir')

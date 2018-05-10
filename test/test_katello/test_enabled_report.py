@@ -1,8 +1,7 @@
-import json
 import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
-from unittest2 import TestCase
+from unittest import TestCase
 
 from katello import enabled_report
 
