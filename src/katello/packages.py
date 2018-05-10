@@ -3,11 +3,15 @@ import os
 import sys
 
 from katello.constants import PACKAGE_CACHE_FILE
-from katello.uep import get_manager
+from katello.uep import get_manager, lookup_consumer_id
 
 
 def upload_package_profile():
-    get_manager().profilelib._do_update()
+    consumer_id = lookup_consumer_id()
+    if consumer_id is None:
+        sys.stderr.write("Cannot upload package profile. Is this client registered?\n")
+    else:
+        get_manager().profilelib._do_update()
 
 
 def purge_package_cache():

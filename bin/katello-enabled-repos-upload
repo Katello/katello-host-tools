@@ -1,19 +1,17 @@
 #!/usr/bin/python
 
-import sys
 import optparse
 
-sys.path.append('/usr/lib/yum-plugins')
-
-from enabled_repos_upload import EnabledReport
 from katello.constants import REPOSITORY_PATH
+from katello.enabled_report import EnabledReport
 from katello.repos import EnabledRepoCache, upload_enabled_repos_report
 
 
 def parse_args():
-  parser = optparse.OptionParser()
-  parser.add_option('-f', '--force', help="Force enabled repository upload even if it does not seem out of date.", action='store_true')
-  return parser.parse_args()
+    parser = optparse.OptionParser()
+    parser.add_option('-f', '--force', help="Force enabled repository upload even if it does not seem out of date.", action='store_true')
+    return parser.parse_args()
+
 
 def main():
     (options, args) = parse_args()
@@ -22,6 +20,6 @@ def main():
     report = EnabledReport(REPOSITORY_PATH)
     upload_enabled_repos_report(report)
 
+
 if __name__ == "__main__":
     main()
-

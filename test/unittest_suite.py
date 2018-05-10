@@ -4,6 +4,7 @@ import unittest2 as unittest
 if sys.version_info[0] == 2:
     modules = [
         'test_katello.test_enabled_report',
+        'test_katello.test_packages',
         'test_katello.test_repos',
         'test_rhsm_fact_plugin',
         'test_yum_plugins.test_enabled_repos_upload',

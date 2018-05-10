@@ -13,16 +13,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 #
 
-import sys
 import optparse
 
-sys.path.append('/usr/lib/yum-plugins')
 from katello.packages import purge_package_cache, upload_package_profile
 
+
 def parse_args():
-  parser = optparse.OptionParser()
-  parser.add_option('-f', '--force', help="Force package upload even if it does not seem out of date.", action='store_true')
-  return parser.parse_args()
+    parser = optparse.OptionParser()
+    parser.add_option('-f', '--force', help="Force package upload even if it does not seem out of date.", action='store_true')
+    return parser.parse_args()
 
 
 def main():
@@ -30,6 +29,7 @@ def main():
     if options.force:
         purge_package_cache()
     upload_package_profile()
+
 
 if __name__ == "__main__":
     main()

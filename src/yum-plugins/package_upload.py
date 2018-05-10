@@ -11,23 +11,13 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 #
 
-import sys
-import os
-sys.path.append('/usr/share/rhsm')
-
-from yum.plugins import PluginYumExit, TYPE_CORE, TYPE_INTERACTIVE
-
-from katello.constants import PACKAGE_CACHE_FILE
 from katello.packages import upload_package_profile
+
+from yum.plugins import TYPE_CORE, TYPE_INTERACTIVE
 
 requires_api_version = '2.3'
 plugin_type = (TYPE_CORE, TYPE_INTERACTIVE)
 
-def remove_cache():
-    try:
-        os.remove(PACKAGE_CACHE_FILE)
-    except OSError:
-        pass
 
 def posttrans_hook(conduit):
     if not conduit.confBool("main", "supress_debug"):
@@ -37,4 +27,3 @@ def posttrans_hook(conduit):
     except:
         if not conduit.confBool("main", "supress_errors"):
             conduit.error(2, "Unable to upload Package Profile")
-
