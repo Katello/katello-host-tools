@@ -1,11 +1,13 @@
 sudo: required
-language: python
 
 services:
   - docker
 
-install:
-  - pip install flake8
+matrix:
+  include:
+    - env: DOCKERFILE=images/Dockerfile.el5
+    - env: DOCKERFILE=images/Dockerfile.el6
+    - env: DOCKERFILE=images/Dockerfile.el7
+    - env: DOCKERFILE=images/Dockerfile.f27
 
-script:
-  - make test
+script: make docker-test

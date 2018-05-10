@@ -1,0 +1,18 @@
+FROM astj/centos5-vault
+RUN yum install -y wget && yum clean all
+RUN wget https://fedorapeople.org/groups/katello/releases/yum/3.3/client/el5/x86_64/katello-client-repos-latest.rpm --no-check-certificate
+RUN rpm -Uhv katello-client-repos-latest.rpm
+
+# if this disappears we can find it on github
+RUN wget http://ftp.tu-chemnitz.de/pub/linux/dag/redhat/el5/en/x86_64/rpmforge/RPMS/python-unittest2-0.5.1-1.el5.rf.noarch.rpm
+RUN rpm -Uhv python-unittest2-0.5.1-1.el5.rf.noarch.rpm
+
+# running into a key error using 3.5 repos ("Header V4 RSA/SHA256 signature: BAD, key ID 2c7e5d9a")
+#RUN wget https://fedorapeople.org/groups/katello/releases/yum/3.5/client/el5/x86_64/katello-client-repos-latest.rpm --no-check-certificate
+
+# hard to get a mock rpm and pip ...
+RUN wget -O /usr/lib/python2.4/site-packages/mock.py https://raw.githubusercontent.com/testing-cabal/mock/1.0.1/mock.py --no-check-certificate
+
+COPY containers/assets/epel-el5-archive.repo /etc/yum.repos.d/epel-el5-archive.repo
+RUN yum install -y make python-setuptools subscription-manager gofer python-pulp-agent-lib --nogpgcheck && yum clean all
+WORKDIR /app

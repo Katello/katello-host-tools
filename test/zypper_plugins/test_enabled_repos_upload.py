@@ -15,12 +15,12 @@ try:
 except:
   pass
 
-@unittest.skipIf('zypp_plugin' not in sys.modules, "zypper not present")
 class TestEnabledReposUpload(TestCase):
     def setUp(self):
         self.parser = ConfigParser()
         self.plugin = enabled_repos_upload.EnabledReposUpload()
 
+    @unittest.skipIf('zypp_plugin' not in sys.modules, "zypper not present")
     @patch('enabled_repos_upload.upload_enabled_repos_report')
     def test_plugin_enabled(self, upload_report):
         self.parser.add_section('main')

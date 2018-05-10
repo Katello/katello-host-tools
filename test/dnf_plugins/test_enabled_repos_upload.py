@@ -1,6 +1,6 @@
 import os
 import sys
-from test.dnf_support import PluginTestCase, configure_command
+from dnf_support import PluginTestCase, configure_command
 import unittest2 as unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
@@ -10,7 +10,7 @@ import enabled_repos_upload
 from mock import Mock, patch
 
 
-@unittest.skipIf(sys.version_info[0] < 3, "dnf plugins should use PY3")
+@unittest.skipIf('dnf' not in sys.modules, "DNF not present")
 class TestEnabledReposUploadPlugin(PluginTestCase):
     def setUp(self):
         super(TestEnabledReposUploadPlugin, self).setUp()
