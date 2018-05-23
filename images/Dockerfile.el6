@@ -1,8 +1,8 @@
 FROM centos:6
 
-COPY containers/assets/jortel-gofer-epel.repo /etc/yum.repos.d/jortel-gofer-epel.repo
 RUN yum install -y wget epel-release && yum clean all
+RUN yum install -y https://fedorapeople.org/groups/katello/releases/yum/3.4/client/el6/x86_64/katello-client-repos-latest.rpm && yum clean all
 RUN wget -O /etc/yum.repos.d/epel-subscriptions-manager.repo http://repos.fedorapeople.org/repos/candlepin/subscription-manager/epel-subscription-manager.repo
-RUN yum install make gofer subscription-manager python-pip -y && yum clean all
+RUN yum install make gofer python-pulp-agent-lib subscription-manager python-pip -y && yum clean all
 RUN pip install setuptools==36.7.0
 WORKDIR /app
