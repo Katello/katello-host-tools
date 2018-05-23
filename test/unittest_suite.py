@@ -13,6 +13,9 @@ if sys.version_info[0] == 2:
 
     if sys.version_info[1] > 6:
         modules.append('test_katello.test_plugin')
+    else:
+        # this test file doesn't start with test_ to avoid py3 unittest discovery
+        modules.append('test_katello.legacy_plugin_test')
 
     map(__import__, modules)
 
