@@ -28,7 +28,7 @@ from six.moves import http_client as http
 
 from katello.constants import REPOSITORY_PATH
 
-from gofer.decorators import initializer, remote, action, FORK
+from gofer.decorators import load, unload, remote, action, FORK
 from gofer.agent.plugin import Plugin
 from gofer.pmon import PathMonitor
 from gofer.config import Config
@@ -38,7 +38,7 @@ try:
 except ImportError:
     from subscription_manager.certlib import ConsumerIdentity
 
-from rhsm.connection import UEPConnection, RemoteServerException
+from rhsm.connection import UEPConnection, RemoteServerException, GoneException
 
 from katello.agent.pulp import Dispatcher
 from katello.enabled_report import EnabledReport
@@ -49,7 +49,7 @@ from katello.repos import upload_enabled_repos_report
 plugin = Plugin.find(__name__)
 
 # Path monitoring
-path_monitor = PathMonitor()
+path_monitor = None
 
 # Track registration status
 registered = False
@@ -61,8 +61,8 @@ log = getLogger(__name__)
 RHSM_CONFIG_PATH = '/etc/rhsm/rhsm.conf'
 
 
-@initializer
-def init_plugin():
+@load
+def plugin_loaded():
     """
     Initialize the plugin.
     Called (once) immediately after the plugin is loaded.
@@ -70,7 +70,9 @@ def init_plugin():
      - validate registration.  If registered:
        - setup plugin configuration.
     """
+    global path_monitor
     path = ConsumerIdentity.certpath()
+    path_monitor = PathMonitor()
     path_monitor.add(path, certificate_changed)
     path_monitor.add(REPOSITORY_PATH, send_enabled_report)
     path_monitor.start()
@@ -84,6 +86,14 @@ def init_plugin():
         except Exception as e:
             log.warn(str(e))
             sleep(60)
+
+
+@unload
+def plugin_unloaded():
+    """
+    The plugin has been uploaded.
+    """
+    path_monitor.abort()
 
 
 def bundle(certificate):
@@ -186,8 +196,10 @@ def validate_registration():
         uep = UEP()
         consumer = uep.getConsumer(consumer_id)
         registered = (consumer is not None)
+    except GoneException:
+        registered = False
     except RemoteServerException as e:
-        if e.code != http.NOT_FOUND:
+        if e.code not in (http.NOT_FOUND, http.GONE):
             log.warn(str(e))
             raise
     except Exception as e:
