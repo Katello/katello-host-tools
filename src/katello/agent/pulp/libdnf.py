@@ -239,8 +239,6 @@ class Package(API):
                 for ad, packages in lib.applicable_advisories(AdvisoryFilter(ids=advisories)):
                     for name, evr in packages:
                         patterns.add(name)
-                if patterns:
-                    lib.upgrade(patterns)
             else:
                 lib.upgrade(patterns)
             if self.commit:
