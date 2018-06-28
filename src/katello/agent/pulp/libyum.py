@@ -291,11 +291,12 @@ class Package(API):
                     'cves': []
                 }
                 updateinfo.update_minimal(lib)
-            if patterns:
-                for pattern in patterns:
-                    lib.update(pattern=str(pattern))
             else:
-                lib.update()
+                if patterns:
+                    for pattern in patterns:
+                        lib.update(pattern=str(pattern))
+                else:
+                    lib.update()
             lib.resolveDeps()
             if self.commit and len(lib.tsInfo):
                 lib.processTransaction()
