@@ -30,6 +30,7 @@ def report_enabled_repos(consumer_id, report):
     method = '/systems/%s/enabled_repos' % uep.sanitize(consumer_id)
     try:
         uep.conn.request_put(method, report)
+        return True
     except (RemoteServerException, GoneException):
         error = sys.exc_info()[1]  # backward and forward compatible way to get the exception
         error_message(str(error))
@@ -42,8 +43,7 @@ def upload_enabled_repos_report(report):
         error_message('Cannot upload enabled repos report, is this client registered?')
     else:
         cache = EnabledRepoCache(consumer_id, content)
-        if not cache.is_valid():
-            report_enabled_repos(consumer_id, content)
+        if not cache.is_valid() and report_enabled_repos(consumer_id, content):
             cache.save()
 
 

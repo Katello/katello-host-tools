@@ -1,6 +1,8 @@
 import os
 import sys
 
+from rhsm.connection import RemoteServerException
+
 from mock import patch, Mock
 import unittest2 as unittest
 
@@ -55,3 +57,16 @@ class TestSendEnabledReport(unittest.TestCase):
         # validation
         fake_certificate.getConsumerId.assert_called_with()
         fake_report_enabled.assert_not_called()
+
+    @patch('katello.repos.get_uep')
+    @patch('katello.repos.lookup_consumer_id')
+    @patch('katello.repos.EnabledRepoCache.is_valid')
+    @patch('katello.repos.EnabledRepoCache.save')
+    def test_http_fail(self, cache_save, cache_valid, fake_consumer_id, fake_uep):
+        fake_uep().conn.request_put.side_effect = RemoteServerException(500)
+        cache_valid.return_value = False
+
+        enabled_repos_upload.upload_enabled_repos_report(Mock())
+
+        # validation
+        cache_save.assert_not_called()
