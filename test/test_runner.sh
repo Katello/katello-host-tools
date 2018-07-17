@@ -1,3 +1,5 @@
+#!/bin/bash
+
 set -e
 
 if command -v python3;  then
@@ -12,7 +14,7 @@ make install
 if grep -q -i 'release 5' /etc/redhat-release; then
   python ./test/unittest_suite.py
 else
-  make test-${PYTHON}
+  make test
 
   # don't fail on flake8 for now
   ${PYTHON} -m flake8 --ignore E501 ./bin/* src/ || true
