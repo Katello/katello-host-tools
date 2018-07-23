@@ -147,7 +147,12 @@ class PackageHandler(ContentHandler):
         report = PackageReport()
         _all = options.get('all', False)
         package = self._impl(options)
-        patterns = [Pattern(**u) for u in units]
+
+        if _all:
+            patterns = []
+        else:
+            patterns = [Pattern(**u) for u in units]
+
         if patterns or _all:
             details = package.update(patterns)
             if details['failed']:
