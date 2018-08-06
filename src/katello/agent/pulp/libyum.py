@@ -395,6 +395,15 @@ class LibYum(YumBase):
         self.preconf.plugin_types = (TYPE_CORE, TYPE_INTERACTIVE)
         self.conf.assumeyes = True
 
+
+    """
+    Plugins ordinarily used via CLI may use YumBaseCli to register their respective commands
+    Since we extend YumBase we need to make sure any such plugins we've loaded don't raise an error when doing so
+    """
+    def registerCommand(self, command):
+      return self
+
+
     def doPluginSetup(self, *args, **kwargs):
         """
         Plugin setup.
