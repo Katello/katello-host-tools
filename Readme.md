@@ -24,8 +24,7 @@ make install
 Full test suites:
 
 ```sh
-make test-python2
-make test-python3
+make test
 ```
 
 #### Manually
