@@ -17,6 +17,7 @@ class TestLibYum(unittest.TestCase):
         assert lib.registerCommand(True)
 
 
+@unittest.skipIf('yum' not in sys.modules, "Yum not present")
 class TestPackage(unittest.TestCase):
     def setUp(self):
         self.package = libyum.Package(commit=False)
