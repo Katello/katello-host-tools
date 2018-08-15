@@ -1,0 +1,6 @@
+[zoo]
+name=some animals
+baseurl=https://inecas.fedorapeople.org/fakerepos/zoo/
+repo_gpgcheck=0
+gpgcheck=false
+enabled=1

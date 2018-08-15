@@ -15,3 +15,17 @@ class TestLibYum(unittest.TestCase):
     def test_register_command(self):
         lib = libyum.LibYum()
         assert lib.registerCommand(True)
+
+
+@unittest.skipIf('yum' not in sys.modules, "Yum not present")
+class TestPackage(unittest.TestCase):
+    def setUp(self):
+        self.package = libyum.Package(commit=False)
+
+    def test_install_nevra(self):
+        pattern = libyum.Pattern('walrus', '*', '0.71', '1', 'noarch')
+        assert self.package.install([pattern])
+
+    def test_install_nevra_name(self):
+        pattern = libyum.Pattern('walrus-0.71-1.noarch')
+        assert self.package.install([pattern])
