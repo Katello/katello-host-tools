@@ -1,6 +1,7 @@
 FROM centos:7
 
 COPY containers/assets/jortel-gofer-epel.repo /etc/yum.repos.d/jortel-gofer-epel.repo
+COPY containers/assets/zoo.repo /etc/yum.repos.d/
 RUN yum install -y epel-release && yum clean all
 RUN yum install make gofer python-setuptools python-tracer subscription-manager python-pip -y && yum clean all
 WORKDIR /app
