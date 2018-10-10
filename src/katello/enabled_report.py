@@ -4,6 +4,10 @@ if sys.version_info[0] == 3:
     from configparser import ConfigParser
 else:
     from ConfigParser import ConfigParser
+try:
+    import dnf
+except ImportError:
+    import yum
 
 class EnabledReport(object):
     def __generate(self):
@@ -21,6 +25,10 @@ class EnabledReport(object):
         :param path: A .repo file path used to filter the report.
         :type path: str
         """
+        try:
+            self.db = dnf.dnf.Base()
+        except NameError:
+            self.yb = yum.YumBase()
         self.repofile = repo_file
         self.content = self.__generate()
 
@@ -43,15 +51,11 @@ class EnabledReport(object):
         """
         try:
             return self._obtain_mappings_dnf()
-        except ImportError:
+        except AttributeError:
             return self._obtain_mappings_yum()
 
     def _obtain_mappings_dnf(self):
-        import dnf
-        db = dnf.dnf.Base()
-        return {'releasever': db.conf.substitutions['releasever'], 'basearch': db.conf.substitutions['basearch']}
+        return {'releasever': self.db.conf.substitutions['releasever'], 'basearch': self.db.conf.substitutions['basearch']}
 
     def _obtain_mappings_yum(self):
-        import yum
-        yb = yum.YumBase()
-        return {'releasever': yb.conf.yumvar['releasever'], 'basearch': yb.conf.yumvar['basearch']}
+        return {'releasever': self.yb.conf.yumvar['releasever'], 'basearch': self.yb.conf.yumvar['basearch']}
