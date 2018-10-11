@@ -2,10 +2,10 @@
 
 import optparse
 
-from katello.constants import REPOSITORY_PATH
+from katello.constants import REPOSITORY_PATH, ENABLED_REPOS_PLUGIN_CONF
 from katello.enabled_report import EnabledReport
 from katello.repos import EnabledRepoCache, upload_enabled_repos_report
-
+from katello.utils import plugin_enabled
 
 def parse_args():
     parser = optparse.OptionParser()
@@ -17,8 +17,9 @@ def main():
     (options, args) = parse_args()
     if options.force:
         EnabledRepoCache.remove_cache()
-    report = EnabledReport(REPOSITORY_PATH)
-    upload_enabled_repos_report(report)
+    if options.force or plugin_enabled(ENABLED_REPOS_PLUGIN_CONF):
+        report = EnabledReport(REPOSITORY_PATH)
+        upload_enabled_repos_report(report)
 
 
 if __name__ == "__main__":
