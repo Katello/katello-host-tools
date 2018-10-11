@@ -16,7 +16,8 @@
 import optparse
 
 from katello.packages import purge_package_cache, upload_package_profile
-
+from katello.utils import plugin_enabled
+from katello.constants import PACKAGE_PROFILE_PLUGIN_CONF
 
 def parse_args():
     parser = optparse.OptionParser()
@@ -28,7 +29,8 @@ def main():
     (options, args) = parse_args()
     if options.force:
         purge_package_cache()
-    upload_package_profile()
+    if options.force or plugin_enabled(PACKAGE_PROFILE_PLUGIN_CONF):
+        upload_package_profile()
 
 
 if __name__ == "__main__":
