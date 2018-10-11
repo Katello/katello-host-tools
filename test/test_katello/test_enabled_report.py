@@ -32,7 +32,7 @@ class TestEnabledReport(TestCase):
     @patch('katello.enabled_report.EnabledReport._obtain_mappings_yum')
     @patch('katello.enabled_report.EnabledReport._obtain_mappings_dnf')
     def test_var_interpolation_yum(self, mock_obtain_mappings_dnf, mock_obtain_mappings_yum):
-        mock_obtain_mappings_dnf.side_effect = ImportError("dnf not available on 80286")
+        mock_obtain_mappings_dnf.side_effect = AttributeError("EnabledReport' object has no attribute 'db'")
         mock_obtain_mappings_yum.return_value = {'releasever': "6.22", 'basearch': "80286"}
         rh_repo = os.path.join(os.path.dirname(__file__), 'data/repos/redhat.repo.with_vars')
         report = enabled_report.EnabledReport(rh_repo)
