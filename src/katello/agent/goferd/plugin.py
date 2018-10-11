@@ -26,8 +26,6 @@ from subprocess import Popen
 
 from six.moves import http_client as http
 
-from katello.constants import REPOSITORY_PATH
-
 from gofer.decorators import load, unload, remote, action, FORK
 from gofer.agent.plugin import Plugin
 from gofer.pmon import PathMonitor
@@ -41,8 +39,6 @@ except ImportError:
 from rhsm.connection import UEPConnection, RemoteServerException, GoneException
 
 from katello.agent.pulp import Dispatcher
-from katello.enabled_report import EnabledReport
-from katello.repos import upload_enabled_repos_report
 
 
 # This plugin
@@ -74,7 +70,6 @@ def plugin_loaded():
     path = ConsumerIdentity.certpath()
     path_monitor = PathMonitor()
     path_monitor.add(path, certificate_changed)
-    path_monitor.add(REPOSITORY_PATH, send_enabled_report)
     path_monitor.start()
     while True:
         try:
@@ -128,7 +123,6 @@ def certificate_changed(path):
             validate_registration()
             if registered:
                 update_settings()
-                send_enabled_report()
                 plugin.attach()
             else:
                 plugin.detach()
@@ -137,11 +131,6 @@ def certificate_changed(path):
         except Exception as e:
             log.warn(str(e))
             sleep(60)
-
-
-def send_enabled_report(path=REPOSITORY_PATH):
-    report = EnabledReport(path)
-    upload_enabled_repos_report(report)
 
 
 def update_settings():
