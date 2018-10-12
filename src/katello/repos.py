@@ -3,8 +3,9 @@ import os
 import sys
 import os.path
 
-from katello.constants import ENABLED_REPOS_CACHE_FILE
+from katello.constants import ENABLED_REPOS_CACHE_FILE, ENABLED_REPOS_PLUGIN_CONF, DISABLE_ENABLE_REPOS_VAR
 from katello.uep import get_uep, lookup_consumer_id
+from katello.utils import plugin_enabled
 
 from rhsm.connection import GoneException, RemoteServerException
 
@@ -36,7 +37,10 @@ def report_enabled_repos(consumer_id, report):
         error_message(str(error))
 
 
-def upload_enabled_repos_report(report):
+def upload_enabled_repos_report(report, force=False):
+    if not plugin_enabled(ENABLED_REPOS_PLUGIN_CONF, DISABLE_ENABLE_REPOS_VAR, force):
+        return
+
     content = report.content
     consumer_id = lookup_consumer_id()
     if consumer_id is None:
