@@ -22,6 +22,7 @@ class TestSendEnabledReport(unittest.TestCase):
     @patch('katello.repos.report_enabled_repos')
     @patch('katello.repos.EnabledRepoCache.is_valid')
     @patch('katello.repos.EnabledRepoCache.save')
+    @patch('katello.repos.ENABLED_REPOS_PLUGIN_CONF', 'test/test_katello/data/plugin_conf/enabled.conf')
     @unittest.skipIf(sys.version_info[0] > 2, "yum tests for PY2 only")
     def test_send(self, cache_save, cache_valid, fake_report_enabled, fake_read, fake_report):
         consumer_id = '1234'
@@ -45,6 +46,7 @@ class TestSendEnabledReport(unittest.TestCase):
     @patch('katello.repos.report_enabled_repos')
     @patch('katello.repos.EnabledRepoCache.is_valid')
     @patch('katello.repos.EnabledRepoCache.save')
+    @patch('katello.repos.ENABLED_REPOS_PLUGIN_CONF', 'test/test_katello/data/plugin_conf/enabled.conf')
     @unittest.skipIf(sys.version_info[0] > 2, "yum tests for PY2 only")
     def test_cached(self, cache_save, cache_valid, fake_report_enabled, fake_read, fake_report):
         consumer_id = '1234'

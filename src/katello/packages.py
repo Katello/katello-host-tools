@@ -2,11 +2,14 @@ import errno
 import os
 import sys
 
-from katello.constants import PACKAGE_CACHE_FILE
+from katello.constants import PACKAGE_CACHE_FILE, PACKAGE_PROFILE_PLUGIN_CONF, DISABLE_PACKAGE_PROFILE_VAR
 from katello.uep import get_manager, lookup_consumer_id
+from katello.utils import plugin_enabled
 
+def upload_package_profile(force=False):
+    if not plugin_enabled(PACKAGE_PROFILE_PLUGIN_CONF, DISABLE_PACKAGE_PROFILE_VAR, force):
+      return
 
-def upload_package_profile():
     consumer_id = lookup_consumer_id()
     if consumer_id is None:
         sys.stderr.write("Cannot upload package profile. Is this client registered?\n")

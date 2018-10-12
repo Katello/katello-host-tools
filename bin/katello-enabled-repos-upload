@@ -2,14 +2,15 @@
 
 import optparse
 
-from katello.constants import REPOSITORY_PATH, ENABLED_REPOS_PLUGIN_CONF
+from katello.constants import REPOSITORY_PATH, ENABLED_REPOS_PLUGIN_CONF, DISABLE_ENABLE_REPOS_VAR
 from katello.enabled_report import EnabledReport
 from katello.repos import EnabledRepoCache, upload_enabled_repos_report
-from katello.utils import plugin_enabled
 
 def parse_args():
-    parser = optparse.OptionParser()
-    parser.add_option('-f', '--force', help="Force enabled repository upload even if it does not seem out of date.", action='store_true')
+    description = 'This report can be disabled by either disabling the package management plugin in ' +\
+              ENABLED_REPOS_PLUGIN_CONF + ' or via the environment variable ' + DISABLE_ENABLE_REPOS_VAR
+    parser = optparse.OptionParser(description=description)
+    parser.add_option('-f', '--force', help="Force enabled repository upload even if it does not seem out of date, or is otherwise disabled..", action='store_true')
     return parser.parse_args()
 
 
@@ -17,9 +18,8 @@ def main():
     (options, args) = parse_args()
     if options.force:
         EnabledRepoCache.remove_cache()
-    if options.force or plugin_enabled(ENABLED_REPOS_PLUGIN_CONF):
-        report = EnabledReport(REPOSITORY_PATH)
-        upload_enabled_repos_report(report)
+    report = EnabledReport(REPOSITORY_PATH)
+    upload_enabled_repos_report(report, options.force)
 
 
 if __name__ == "__main__":

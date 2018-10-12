@@ -17,8 +17,6 @@ from os.path import basename
 import sys
 import logging
 
-from katello.utils import plugin_enabled
-from katello.constants import PACKAGE_PROFILE_PLUGIN_CONF
 from katello.packages import upload_package_profile
 
 from zypp_plugin import Plugin
@@ -68,7 +66,7 @@ class KatelloZyppPlugin(Plugin):
         self.ack()
 
 
-if "DISABLE_KATELLO_ZYPP_PLUGIN" in environ or not plugin_enabled(PACKAGE_PROFILE_PLUGIN_CONF):
+if "DISABLE_KATELLO_ZYPP_PLUGIN" in environ:
 
     logging.info("$DISABLE_KATELLO_ZYPP_PLUGIN is set - disabling katello-zypp-plugin")
 
