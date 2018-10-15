@@ -1,8 +1,6 @@
 import os.path
 from ConfigParser import ConfigParser
-
 from katello.constants import REPOSITORY_PATH
-
 import yum
 
 
