@@ -22,6 +22,7 @@ class EnabledReport(object):
         :param path: A .repo file path used to filter the report.
         :type path: str
         """
+        self.yb = yum.YumBase()
         self.repofile = repo_file
         self.content = self.__generate()
 
@@ -35,7 +36,7 @@ class EnabledReport(object):
         :param repo_url: a repo URL that you want to replace $basearch and $releasever in.
         :type path: str
         """
-        yb = yum.YumBase()
-        mappings = {'releasever': yb.conf.yumvar['releasever'], 'basearch': yb.conf.yumvar['basearch']}
+
+        mappings = {'releasever': self.yb.conf.yumvar['releasever'], 'basearch': self.yb.conf.yumvar['basearch']}
 
         return repo_url.replace('$releasever', mappings['releasever']).replace('$basearch', mappings['basearch'])
