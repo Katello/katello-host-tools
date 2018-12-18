@@ -17,14 +17,14 @@ except ImportError:
 FAKE_REPORT = {'foobar': 1}
 
 class TestSendEnabledReport(unittest.TestCase):
+    @patch('katello.repos.plugin_enabled', return_value=True)
     @patch('enabled_repos_upload.EnabledReport')
     @patch('katello.uep.ConsumerIdentity.read')
     @patch('katello.repos.report_enabled_repos')
     @patch('katello.repos.EnabledRepoCache.is_valid')
     @patch('katello.repos.EnabledRepoCache.save')
-    @patch('katello.repos.ENABLED_REPOS_PLUGIN_CONF', 'test/test_katello/data/plugin_conf/enabled.conf')
     @unittest.skipIf(sys.version_info[0] > 2, "yum tests for PY2 only")
-    def test_send(self, cache_save, cache_valid, fake_report_enabled, fake_read, fake_report):
+    def test_send(self, cache_save, cache_valid, fake_report_enabled, fake_read, fake_report, plugin_enabled):
         consumer_id = '1234'
         fake_certificate = Mock()
         fake_certificate.getConsumerId.return_value = consumer_id
@@ -41,14 +41,14 @@ class TestSendEnabledReport(unittest.TestCase):
         fake_certificate.getConsumerId.assert_called_with()
         fake_report_enabled.assert_called_with(consumer_id, FAKE_REPORT)
 
+    @patch('katello.repos.plugin_enabled', return_value=True)
     @patch('enabled_repos_upload.EnabledReport')
     @patch('katello.uep.ConsumerIdentity.read')
     @patch('katello.repos.report_enabled_repos')
     @patch('katello.repos.EnabledRepoCache.is_valid')
     @patch('katello.repos.EnabledRepoCache.save')
-    @patch('katello.repos.ENABLED_REPOS_PLUGIN_CONF', 'test/test_katello/data/plugin_conf/enabled.conf')
     @unittest.skipIf(sys.version_info[0] > 2, "yum tests for PY2 only")
-    def test_cached(self, cache_save, cache_valid, fake_report_enabled, fake_read, fake_report):
+    def test_cached(self, cache_save, cache_valid, fake_report_enabled, fake_read, fake_report, plugin_enabled):
         consumer_id = '1234'
         fake_certificate = Mock()
         fake_certificate.getConsumerId.return_value = consumer_id

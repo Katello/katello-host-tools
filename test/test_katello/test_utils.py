@@ -10,21 +10,36 @@ from mock import patch
 ENABLED_CONF = 'test/test_katello/data/plugin_conf/enabled.conf'
 DISABLED_CONF = 'test/test_katello/data/plugin_conf/disabled.conf'
 
-class TestUtils(TestCase):
-    def test_plugin_enabled(self):
+class TestPluginEnabled(TestCase):
+    @patch('katello.utils.subman_profile_enabled', return_value=False)
+    def test_conf_enabled(self, mock_subman):
         self.assertTrue(utils.plugin_enabled(ENABLED_CONF, 'somevar'))
 
-    def test_plugin_enabled_disabled(self):
+    @patch('katello.utils.subman_profile_enabled', return_value=False)
+    def test_conf_disabled(self, mock_subman):
         conf = 'test/test_katello/data/plugin_conf/disabled.conf'
         self.assertFalse(utils.plugin_enabled(DISABLED_CONF, 'somevar'))
 
-    def test_plugin_enabled_disabled_force(self):
+    @patch('katello.utils.subman_profile_enabled', return_value=False)
+    def test_conf_disabled_force(self, mock_subman):
         self.assertTrue(utils.plugin_enabled(DISABLED_CONF, 'somevar', True))
 
-    def test_plugin_enabled_disabled_var(self):
+    @patch('katello.utils.subman_profile_enabled', return_value=False)
+    def test_env_disabled(self, mock_subman):
         os.environ['testa'] = 'true'
         self.assertFalse(utils.plugin_enabled(ENABLED_CONF, 'testa', False))
 
-    def test_plugin_enabled_disabled_var_force(self):
+    @patch('katello.utils.subman_profile_enabled', return_value=False)
+    def test_env_disabled_force(self, mock_subman):
         os.environ['testa'] = 'true'
         self.assertTrue(utils.plugin_enabled(ENABLED_CONF, 'testa', True))
+
+    def test_subman_profile_module_present(self):
+        sys.modules["rhsm.profile.EnabledReposProfile"] = True
+        self.assertFalse(utils.plugin_enabled(ENABLED_CONF, 'somevar'))
+
+    def test_subman_profile_module_missing(self):
+        if "rhsm.profile.EnabledReposProfile" in sys.modules:
+            del sys.modules["rhsm.profile.EnabledReposProfile"]
+
+        self.assertTrue(utils.plugin_enabled(ENABLED_CONF, 'somevar'))
