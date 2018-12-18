@@ -9,10 +9,10 @@ from mock import patch
 
 
 class TestUploadPackageProfile(TestCase):
+    @patch('katello.packages.plugin_enabled', return_value=True)
     @patch('katello.packages.get_manager')
     @patch('katello.packages.lookup_consumer_id')
-    @patch('katello.packages.PACKAGE_PROFILE_PLUGIN_CONF', 'test/test_katello/data/plugin_conf/enabled.conf')
-    def test_upload_registered(self, mock_lookup, mock_manager):
+    def test_upload_registered(self, mock_lookup, mock_manager, plugin_enabled):
         mock_lookup.return_value = True
 
         upload_package_profile()
