@@ -1,13 +1,17 @@
 import sys
 from os import environ
 
-if sys.version_info[0] == 3:
-    from configparser import ConfigParser
-else:
-    from ConfigParser import ConfigParser
+from rhsm import config as rhsmConfig
 
-def plugin_enabled(filepath, environment_variable, force = False):
-    return (force or (config_enabled(filepath) and not environment_disabled(environment_variable))) and not subman_profile_enabled()
+if sys.version_info[0] == 3:
+    from configparser import ConfigParser, NoOptionError
+else:
+    from ConfigParser import ConfigParser, NoOptionError
+
+
+def plugin_enabled(filepath, environment_variable=None, force=False):
+    return force or (config_enabled(filepath) and not environment_disabled(environment_variable) and not subman_profile_enabled())
+
 
 def config_enabled(filepath):
     try:
@@ -17,10 +21,14 @@ def config_enabled(filepath):
     except:
         return False
 
+
 def environment_disabled(variable):
-    return variable in environ and environ[variable] != ''
+    return variable is not None and variable in environ and environ[variable] != ''
+
 
 def subman_profile_enabled():
-    # subscription-manager versions containing this module
-    # provide package-upload and enabled-repos-upload capability
-    return 'rhsm.profile.EnabledReposProfile' in sys.modules
+    cfg = rhsmConfig.initConfig()
+    try:
+        return cfg.get('rhsm', 'package_profile_on_trans') == '1'
+    except NoOptionError:
+        return False
