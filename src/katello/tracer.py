@@ -4,10 +4,13 @@ import sys
 
 from katello.uep import get_uep, lookup_consumer_id
 
-from tracer.query import Query
+try:
+    from tracer.query import Query
+except ImportError:
+    pass
 
 
-def upload_tracer_profile(queryfunc, plugin):
+def upload_tracer_profile(queryfunc, plugin=None):
     uep = get_uep()
     consumer_id = lookup_consumer_id()
     if consumer_id is None:
@@ -23,7 +26,7 @@ def query_affected_apps(plugin=None):
     return query.affected_applications().get()
 
 
-def get_apps(queryfunc, plugin):
+def get_apps(queryfunc, plugin=None):
     """
     Return a array with nested arrays
     containing name, how to restart & app type

@@ -11,7 +11,8 @@ if sys.version_info[0] == 2:
         'test_katello.test_utils',
         'test_rhsm_fact_plugin',
         'test_yum_plugins.test_enabled_repos_upload',
-        'zypper_plugins.test_enabled_repos_upload'
+        'zypper_plugins.test_enabled_repos_upload',
+        'zypper_plugins.test_tracer_upload'
     ]
 
     if sys.version_info[1] > 6:
