@@ -8,8 +8,6 @@ matrix:
     - env: DOCKERFILE=images/Dockerfile.el5
     - env: DOCKERFILE=images/Dockerfile.el6
     - env: DOCKERFILE=images/Dockerfile.el7
-    - env: DOCKERFILE=images/Dockerfile.f27
-    - env: DOCKERFILE=images/Dockerfile.f28
     - env: DOCKERFILE=images/Dockerfile.f29
 
 script: make docker-test

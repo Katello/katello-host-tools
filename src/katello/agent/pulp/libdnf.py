@@ -1,6 +1,7 @@
 import logging
 
 import dnf
+import libdnf
 import hawkey
 
 
@@ -101,14 +102,28 @@ class TransactionReport(object):
         Args:
             transaction: A DNF transaction.
         """
+
+        ACTION_STATES = [
+            dnf.transaction.PKG_INSTALL,
+            dnf.transaction.PKG_REMOVE,
+            dnf.transaction.PKG_UPGRADE
+        ]
+        FAILED_STATES = [
+            libdnf.transaction.TransactionItemState_ERROR,
+            libdnf.transaction.TransactionItemState_UNKNOWN
+        ]
+
         self.resolved = []
         self.failed = []
         for item in transaction:
-            po = item.installed or item.erased
-            if po:
+            po = item.pkg
+            if po and item.state in FAILED_STATES:
+                _list = self.failed
+            elif po and item.action in ACTION_STATES:
                 _list = self.resolved
             else:
-                _list = self.failed
+                continue
+
             package = dict(
                 qname=str(po),
                 repoid=po.repoid,
@@ -538,11 +553,7 @@ class LibDnf(dnf.Base):
         """
         Download packages as needed.
         """
-        downloads = []
-        for tx in self.transaction:
-            if tx.installed:
-                downloads.append(tx.installed)
-        self.download_packages(downloads)
+        self.download_packages(self.transaction.install_set)
 
     def __enter__(self):
         super(LibDnf, self).__enter__()
