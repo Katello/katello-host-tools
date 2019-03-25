@@ -1,7 +1,7 @@
 FROM centos:6
 
 RUN yum install -y wget epel-release && yum clean all
-RUN yum install -y http://yum.theforeman.org/client/1.21/el6/x86_64/foreman-client-release.rpm && yum clean all
+RUN yum install -y https://yum.theforeman.org/client/1.21/el6/x86_64/foreman-client-release.rpm && yum clean all
 RUN yum install make gofer python-gofer-proton python-pulp-agent-lib subscription-manager python-pip -y && yum clean all
 RUN pip install setuptools==36.7.0
 WORKDIR /app
