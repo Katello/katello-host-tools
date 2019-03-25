@@ -1,5 +1,4 @@
 FROM fedora:29
 
-COPY containers/assets/jortel-gofer-fedora.repo /etc/yum.repos.d/jortel-gofer-fedora.repo
 RUN dnf install make python3-gofer python3-dnf-plugins-core python3-tracer python3-gofer-proton subscription-manager -y && yum clean all
 WORKDIR /app
