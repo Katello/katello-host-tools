@@ -14,5 +14,5 @@ RUN rpm -Uhv python-unittest2-0.5.1-1.el5.rf.noarch.rpm
 RUN wget -O /usr/lib/python2.4/site-packages/mock.py https://raw.githubusercontent.com/testing-cabal/mock/1.0.1/mock.py --no-check-certificate
 
 COPY containers/assets/epel-el5-archive.repo /etc/yum.repos.d/epel-el5-archive.repo
-RUN yum install -y make python-setuptools subscription-manager gofer python-pulp-agent-lib --nogpgcheck && yum clean all
+RUN yum install -y make python-setuptools subscription-manager gofer python-gofer-proton python-pulp-agent-lib --nogpgcheck && yum clean all
 WORKDIR /app
