@@ -4,10 +4,7 @@ import sys
 
 from katello.uep import get_uep, lookup_consumer_id
 
-try:
-    from tracer.query import Query
-except ImportError:
-    sys.exit('Error Importing tracer! Is tracer installed?')
+from tracer.query import Query
 
 
 def upload_tracer_profile(queryfunc, plugin):
