@@ -1,6 +1,6 @@
 FROM centos:7
 
-RUN yum install -y http://yum.theforeman.org/client/1.21/el7/x86_64/foreman-client-release.rpm && yum clean all
+RUN yum install -y https://yum.theforeman.org/client/1.21/el7/x86_64/foreman-client-release.rpm && yum clean all
 RUN yum install -y epel-release && yum clean all
 RUN yum install make gofer python-gofer-proton python-setuptools python-tracer subscription-manager python-pip -y && yum clean all
 WORKDIR /app
