@@ -1,18 +1,34 @@
 FROM astj/centos5-vault
-RUN yum install -y wget && yum clean all
-RUN wget https://fedorapeople.org/groups/katello/releases/yum/3.3/client/el5/x86_64/katello-client-repos-latest.rpm --no-check-certificate
-RUN rpm -Uhv katello-client-repos-latest.rpm
+
+COPY containers/assets/epel-el5-archive.repo /etc/yum.repos.d/epel-el5-archive.repo
+RUN yum install -y wget make python-setuptools python-ctypes python-hashlib python-uuid python-simplejson dbus-python  pygobject2 python-dateutil python-dmidecode python-ethtool usermode virt-what python-dateutil && yum clean all
+
+# this repo provides a wget that support tls 1.1
+RUN wget http://www.tuxad.de/repo/5/tuxad.rpm
+RUN rpm -Uhv tuxad.rpm
+RUN yum upgrade -y wget && yum clean all
+
+RUN wget -r --no-parent https://fedorapeople.org/groups/katello/releases/yum/3.3/client/el5/x86_64/ --no-check-certificate
+WORKDIR /fedorapeople.org/groups/katello/releases/yum/3.3/client/el5/x86_64/
+RUN rpm -Uhv python-gofer-2.7.5-1.el5.noarch.rpm \
+             python-gofer-proton-2.7.5-1.el5.noarch.rpm \
+             python-qpid-proton-0.9-13.el5.x86_64.rpm \
+             python-qpid-0.18-10.el5.noarch.rpm \
+             saslwrapper-0.10-8.el5.x86_64.rpm \
+             python-saslwrapper-0.10-8.el5.x86_64.rpm \
+             qpid-proton-c-0.9-13.el5.x86_64.rpm \
+             subscription-manager-1.11.3-11.el5.x86_64.rpm \
+             python-rhsm-1.11.3-5.el5.x86_64.rpm \
+             python-pulp-agent-lib-2.8.0-0.7.beta.el5.noarch.rpm \
+             python-pulp-common-2.8.0-0.7.beta.el5.noarch.rpm \
+             python-isodate-0.5.0-4.pulp.el5.noarch.rpm \
+             gofer-2.7.5-1.el5.noarch.rpm --nosignature
 
 # if this disappears we can find it on github
 RUN wget http://ftp.tu-chemnitz.de/pub/linux/dag/redhat/el5/en/x86_64/rpmforge/RPMS/python-unittest2-0.5.1-1.el5.rf.noarch.rpm
 RUN rpm -Uhv python-unittest2-0.5.1-1.el5.rf.noarch.rpm
 
-# running into a key error using 3.5 repos ("Header V4 RSA/SHA256 signature: BAD, key ID 2c7e5d9a")
-#RUN wget https://fedorapeople.org/groups/katello/releases/yum/3.5/client/el5/x86_64/katello-client-repos-latest.rpm --no-check-certificate
-
 # hard to get a mock rpm and pip ...
 RUN wget -O /usr/lib/python2.4/site-packages/mock.py https://raw.githubusercontent.com/testing-cabal/mock/1.0.1/mock.py --no-check-certificate
 
-COPY containers/assets/epel-el5-archive.repo /etc/yum.repos.d/epel-el5-archive.repo
-RUN yum install -y make python-setuptools subscription-manager gofer python-gofer-proton python-pulp-agent-lib --nogpgcheck && yum clean all
 WORKDIR /app
