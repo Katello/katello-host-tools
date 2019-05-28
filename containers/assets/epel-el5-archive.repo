@@ -1,6 +1,6 @@
 [epel-el5-archive]
 name=epel el5 archived
-baseurl=https://dl.fedoraproject.org/pub/archive/epel/5/x86_64/
+baseurl=http://dl.fedoraproject.org/pub/archive/epel/5/x86_64/
 type=rpm-md
 skip_if_unavailable=True
 gpgcheck=0
