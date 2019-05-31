@@ -257,8 +257,9 @@ class Package(API):
                 for ad, packages in lib.applicable_advisories(AdvisoryFilter(ids=advisories)):
                     for name, evr in packages:
                         patterns.add(name)
-            else:
+            if patterns:
                 lib.upgrade(patterns)
+
             if self.commit:
                 lib.do_transaction()
             report = UpdateTxReport(lib.transaction or ())
