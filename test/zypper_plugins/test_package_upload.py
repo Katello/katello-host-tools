@@ -8,17 +8,17 @@ from mock import Mock, patch
 try:
     sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
     sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/zypper_plugins'))
-    import enabled_repos_upload
+    import package_upload
 except:
   pass
 
-class TestEnabledReposUpload(TestCase):
+class TestPackageUpload(TestCase):
     def setUp(self):
-        self.plugin = enabled_repos_upload.EnabledReposUpload()
+        self.plugin = package_upload.KatelloZyppPlugin()
 
     @unittest.skipIf('zypp_plugin' not in sys.modules, "zypper not present")
-    @patch('enabled_repos_upload.upload_enabled_repos_report')
-    def test_plugin_enabled(self, upload_report):
+    @patch('package_upload.upload_package_profile')
+    def test_plugin_enabled(self, upload_package_profile):
         self.plugin.PLUGINEND({}, {})
 
-        assert upload_report.called
+        assert upload_package_profile.called

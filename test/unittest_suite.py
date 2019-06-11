@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import sys
+
 import unittest2 as unittest
+
 
 if sys.version_info[0] == 2:
     modules = [
@@ -9,19 +11,29 @@ if sys.version_info[0] == 2:
         'test_katello.test_packages',
         'test_katello.test_repos',
         'test_katello.test_utils',
-        'test_rhsm_fact_plugin',
-        'test_yum_plugins.test_enabled_repos_upload',
-        'zypper_plugins.test_enabled_repos_upload',
-        'zypper_plugins.test_tracer_upload'
+        'test_rhsm_fact_plugin'
     ]
 
-    if sys.version_info[1] > 6:
-        modules.append('test_katello.test_plugin')
-        modules.append('test_katello.test_agent.test_pulp.test_handler')
-        modules.append('test_katello.test_agent.test_pulp.test_libyum')
+    try:
+        import zypp_plugin
+        zypper_enabled = True
+    except ImportError:
+        zypper_enabled = False
+
+    if zypper_enabled:
+        modules.append('zypper_plugins.test_enabled_repos_upload')
+        modules.append('zypper_plugins.test_package_upload')
+        modules.append('zypper_plugins.test_tracer_upload')
     else:
-        # this test file doesn't start with test_ to avoid py3 unittest discovery
-        modules.append('test_katello.legacy_plugin_test')
+        modules.append('test_yum_plugins.test_enabled_repos_upload')
+
+        if sys.version_info[1] > 6:
+            modules.append('test_katello.test_plugin')
+            modules.append('test_katello.test_agent.test_pulp.test_handler')
+            modules.append('test_katello.test_agent.test_pulp.test_libyum')
+        else:
+            # this test file doesn't start with test_ to avoid py3 unittest discovery
+            modules.append('test_katello.legacy_plugin_test')
 
     map(__import__, modules)
 
