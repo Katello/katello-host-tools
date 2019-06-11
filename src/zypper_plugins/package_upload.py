@@ -66,14 +66,14 @@ class KatelloZyppPlugin(Plugin):
         self.ack()
 
 
-if "DISABLE_KATELLO_ZYPP_PLUGIN" in environ:
+if __name__ == '__main__':
+    if "DISABLE_KATELLO_ZYPP_PLUGIN" in environ:
+        logging.info("$DISABLE_KATELLO_ZYPP_PLUGIN is set - disabling katello-zypp-plugin")
 
-    logging.info("$DISABLE_KATELLO_ZYPP_PLUGIN is set - disabling katello-zypp-plugin")
+        # As the plugin is disabled, we are adding a dummy
+        # Plugin so that zypper still works.
+        plugin = Plugin()
+    else:
+        plugin = KatelloZyppPlugin()
 
-    # As the plugin is disabled, we are adding a dummy
-    # Plugin so that zypper still works.
-    plugin = Plugin()
-    plugin.main()
-else:
-    plugin = KatelloZyppPlugin()
     plugin.main()
