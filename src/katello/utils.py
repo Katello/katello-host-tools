@@ -10,7 +10,7 @@ else:
 
 
 def plugin_enabled(filepath, environment_variable=None, force=False):
-    return force or (config_enabled(filepath) and not environment_disabled(environment_variable) and not subman_profile_enabled())
+    return force or (config_enabled(filepath) and not environment_disabled(environment_variable))
 
 
 def config_enabled(filepath):
@@ -25,10 +25,9 @@ def config_enabled(filepath):
 def environment_disabled(variable):
     return variable is not None and variable in environ and environ[variable] != ''
 
-
-def subman_profile_enabled():
-    cfg = rhsmConfig.initConfig()
+def combined_profiles_enabled():
     try:
-        return cfg.get('rhsm', 'package_profile_on_trans') == '1'
-    except NoOptionError:
+        from rhsm.profile import EnabledRepos
+        return True
+    except ImportError:
         return False
