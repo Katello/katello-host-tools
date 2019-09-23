@@ -23,6 +23,7 @@ class EnabledReport(object):
         :type path: str
         """
         self.yb = yum.YumBase()
+        self.yb.preconf.debuglevel = 0
         self.repofile = repo_file
         self.content = self.__generate()
 
