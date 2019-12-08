@@ -163,7 +163,7 @@ def update_settings():
 
     plugin.cfg.messaging.cacert = existing_ca_certs[0]
     plugin.cfg.messaging.url = 'proton+amqps://%s:5647' % rhsm_conf['server']['hostname']
-    plugin.cfg.messaging.uuid = 'pulp.agent.%s' % certificate.getConsumerId()
+    plugin.cfg.model.queue = 'pulp.agent.%s' % certificate.getConsumerId()
     bundle(certificate)
 
 
