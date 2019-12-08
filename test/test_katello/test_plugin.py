@@ -41,6 +41,7 @@ class PluginTest(unittest.TestCase):
         plugin._module = plugin
         plugin_cfg = Mock()
         plugin_cfg.messaging = Mock()
+        plugin_cfg.model = Mock()
         plugin.plugin = Mock()
         plugin.plugin.scheduler = Mock()
         plugin.plugin.scheduler.pending = Mock(PENDING='/tmp/pending', stream='abc')
@@ -177,7 +178,7 @@ class TestUpdateSettings(PluginTest):
         plugin_cfg = self.plugin.plugin.cfg
         self.assertEqual(plugin_cfg.messaging.cacert, default_ca_cert)
         self.assertEqual(plugin_cfg.messaging.url, 'proton+amqps://%s:5647' % self.host)
-        self.assertEqual(plugin_cfg.messaging.uuid, 'pulp.agent.%s' % consumer_id)
+        self.assertEqual(plugin_cfg.model.queue, 'pulp.agent.%s' % consumer_id)
 
 
 @unittest.skipIf(sys.version_info[0] == 2 and sys.version_info[1] < 7, "goferd plugin requires python 2.7+")
