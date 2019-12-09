@@ -10,6 +10,7 @@ matrix:
     - env: DOCKERFILE=images/Dockerfile.el7
     - env: DOCKERFILE=images/Dockerfile.f29
     - env: DOCKERFILE=images/Dockerfile.f30
+    - env: DOCKERFILE=images/Dockerfile.f31
     - env: DOCKERFILE=images/Dockerfile.suseLeap42
 
 script: make docker-test

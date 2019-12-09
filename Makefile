@@ -10,6 +10,13 @@ PYTHON ?= python
 PIP ?= pip
 endif
 
+PODMAN=$(shell command -v podman)
+ifneq ($(PODMAN),)
+CONTAINER_EXEC ?= podman
+else
+CONTAINER_EXEC ?= docker
+endif
+
 default: help
 
 help:
@@ -43,10 +50,10 @@ test: test-install
 	$(PYTHON) test/unittest_suite.py
 
 docker-build:
-	docker build -f $(DOCKERFILE) -t kht-builder .
+	$(CONTAINER_EXEC) build -f $(DOCKERFILE) -t kht-builder .
 
 docker-run: docker-build
-	docker run --rm -itv $(CURDIR):/app$(USE_SELINUX) kht-builder bash
+	$(CONTAINER_EXEC) run --rm -itv $(CURDIR):/app$(USE_SELINUX) kht-builder bash
 
 docker-test: docker-build
-	docker run --rm -itv $(CURDIR):/app$(USE_SELINUX) kht-builder ./test/test_runner.sh
+	$(CONTAINER_EXEC) run --rm -itv $(CURDIR):/app$(USE_SELINUX) kht-builder ./test/test_runner.sh
