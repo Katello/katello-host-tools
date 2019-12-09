@@ -6,7 +6,7 @@ RUN yum install -y wget make python-setuptools python-ctypes python-hashlib pyth
 # this repo provides a wget that support tls 1.1
 RUN wget http://www.tuxad.de/repo/5/tuxad.rpm
 RUN rpm -Uhv tuxad.rpm
-RUN yum upgrade -y wget && yum clean all
+RUN yum upgrade -y wget --nogpgcheck && yum clean all
 
 RUN wget -r --no-parent https://fedorapeople.org/groups/katello/releases/yum/3.3/client/el5/x86_64/ --no-check-certificate
 WORKDIR /fedorapeople.org/groups/katello/releases/yum/3.3/client/el5/x86_64/
