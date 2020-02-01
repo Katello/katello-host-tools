@@ -26,3 +26,14 @@ class TestLibDnf(unittest.TestCase):
         #strip the evrs out of the package
         packages = set([pack[0] for pack in packages])
         mock_libdnf.upgrade.assert_called_with(packages)
+
+  def test_package_update_all(self):
+      advisories = set()
+      packages = set()
+      mock_libdnf = MagicMock()
+      mock_libdnf.__enter__ = lambda instance: instance
+      with patch('katello.agent.pulp.libdnf.LibDnf', return_value= mock_libdnf):
+        package = libdnf.Package()
+        package.update(packages, advisories)
+        #strip the evrs out of the package
+        mock_libdnf.upgrade.assert_called_with(packages)
