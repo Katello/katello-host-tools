@@ -40,19 +40,16 @@ def report_enabled_repos(consumer_id, report):
 def upload_enabled_repos_report(report, force=False):
     if not plugin_enabled(ENABLED_REPOS_PLUGIN_CONF, DISABLE_ENABLE_REPOS_VAR, force):
         return
-    if combined_profiles_enabled():
-        get_manager().profilelib._do_update()
-        return
-
-    content = report.content
     consumer_id = lookup_consumer_id()
     if consumer_id is None:
         error_message('Cannot upload enabled repos report, is this client registered?')
+    elif combined_profiles_enabled():
+        get_manager().profilelib._do_update()
     else:
+        content = report.content
         cache = EnabledRepoCache(consumer_id, content)
         if not cache.is_valid() and report_enabled_repos(consumer_id, content):
             cache.save()
-
 
 class EnabledRepoCache:
     def __init__(self, consumer_id, content):
