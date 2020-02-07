@@ -35,4 +35,4 @@ class TestPurgePackageCache(TestCase):
     def test_purge(self, mock_os):
         purge_package_cache()
 
-        mock_os.remove.assert_called_with('/var/lib/rhsm/packages/packages.json')
+        mock_os.remove.assert_called_with('/var/lib/rhsm/cache/profile.json')

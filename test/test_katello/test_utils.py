@@ -39,30 +39,3 @@ class TestPluginEnabled(TestCase):
     def test_env_disabled_force(self, mock_subman):
         os.environ['testa'] = 'true'
         self.assertTrue(utils.plugin_enabled(ENABLED_CONF, 'testa', True))
-
-    @patch('katello.utils.rhsmConfig.initConfig')
-    def test_combined_profiles_enabled(self, mock_init):
-        mock_config = Mock()
-        mock_init.return_value = mock_config
-        mock_config.get.return_value = '1'
-
-        self.assertFalse(utils.plugin_enabled(ENABLED_CONF))
-        mock_config.get.assert_called_with('rhsm', 'package_profile_on_trans')
-
-    @patch('katello.utils.rhsmConfig.initConfig')
-    def test_combined_profiles_enabled_disabled(self, mock_init):
-        mock_config = Mock()
-        mock_init.return_value = mock_config
-        mock_config.get.return_value = '0'
-
-        self.assertTrue(utils.plugin_enabled(ENABLED_CONF))
-        mock_config.get.assert_called_with('rhsm', 'package_profile_on_trans')
-
-    @patch('katello.utils.rhsmConfig.initConfig')
-    def test_combined_profiles_enabled_missing_config_key(self, mock_init):
-        mock_config = Mock()
-        mock_init.return_value = mock_config
-        mock_config.get.side_effect = NoOptionError('rhsm', 'package_profile_on_trans')
-
-        self.assertTrue(utils.plugin_enabled(ENABLED_CONF))
-        mock_config.get.assert_called_with('rhsm', 'package_profile_on_trans')
