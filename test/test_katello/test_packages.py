@@ -32,12 +32,12 @@ class TestUploadPackageProfile(TestCase):
 class TestPurgePackageCache(TestCase):
     @patch('katello.packages.os')
     @patch('katello.packages.combined_profiles_enabled', return_value = True)
-    def test_purge(self, mock_os):
+    def test_purge_profile(self, mock_os,return_value):
         purge_package_cache()
         mock_os.remove.assert_called_with('/var/lib/rhsm/cache/profile.json')
 
     @patch('katello.packages.os')
     @patch('katello.packages.combined_profiles_enabled', return_value = False)
-    def test_purge(self, mock_os):
+    def test_purge_packages(self, mock_os, return_value):
         purge_package_cache()
         mock_os.remove.assert_called_with('/var/lib/rhsm/packages/packages.json')
