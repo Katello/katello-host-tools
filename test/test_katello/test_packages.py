@@ -6,8 +6,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
 from katello.packages import purge_package_cache, upload_package_profile
 
 from mock import patch
-
-
 class TestUploadPackageProfile(TestCase):
     @patch('katello.packages.plugin_enabled', return_value=True)
     @patch('katello.packages.get_manager')
@@ -28,16 +26,15 @@ class TestUploadPackageProfile(TestCase):
 
         mock_manager.assert_not_called()
 
-
 class TestPurgePackageCache(TestCase):
     @patch('katello.packages.os')
     @patch('katello.packages.combined_profiles_enabled', return_value = True)
-    def test_purge_profile(self, mock_os,return_value):
+    def test_purge_profile(self, enabled, mock_os):
         purge_package_cache()
         mock_os.remove.assert_called_with('/var/lib/rhsm/cache/profile.json')
 
     @patch('katello.packages.os')
     @patch('katello.packages.combined_profiles_enabled', return_value = False)
-    def test_purge_packages(self, mock_os, return_value):
+    def test_purge_packages(self,  enabled, mock_os):
         purge_package_cache()
         mock_os.remove.assert_called_with('/var/lib/rhsm/packages/packages.json')
