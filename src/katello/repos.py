@@ -3,7 +3,7 @@ import os
 import os.path
 import sys
 
-from katello.constants import DISABLE_ENABLE_REPOS_VAR, ENABLED_REPOS_CACHE_FILE, ENABLED_REPOS_PLUGIN_CONF, DISABLE_ENABLE_REPOS_VAR, PROFILE_CACHE_FILE
+from katello.constants import DISABLE_ENABLE_REPOS_VAR, ENABLED_REPOS_CACHE_FILE, ENABLED_REPOS_PLUGIN_CONF, PROFILE_CACHE_FILE
 from katello.uep import get_manager, get_uep, lookup_consumer_id
 from katello.utils import combined_profiles_enabled, plugin_enabled
 
