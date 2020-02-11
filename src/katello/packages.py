@@ -1,7 +1,8 @@
 import errno
 import os
 import sys
-from katello.constants import PACKAGE_CACHE_FILE, PACKAGE_PROFILE_PLUGIN_CONF, DISABLE_PACKAGE_PROFILE_VAR, PROFILE_CACHE_FILE
+
+from katello.constants import DISABLE_PACKAGE_PROFILE_VAR, PACKAGE_CACHE_FILE, PACKAGE_PROFILE_PLUGIN_CONF, PROFILE_CACHE_FILE
 from katello.uep import get_manager, lookup_consumer_id
 from katello.utils import plugin_enabled, combined_profiles_enabled
 
