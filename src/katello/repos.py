@@ -51,6 +51,7 @@ def upload_enabled_repos_report(report, force=False):
         if not cache.is_valid() and report_enabled_repos(consumer_id, content):
             cache.save()
 
+
 class EnabledRepoCache:
     def __init__(self, consumer_id, content):
         self.consumer_id = consumer_id
@@ -60,7 +61,7 @@ class EnabledRepoCache:
     def remove_cache():
         file_to_remove = ENABLED_REPOS_CACHE_FILE
         if combined_profiles_enabled():
-           file_to_remove = PROFILE_CACHE_FILE
+            file_to_remove = PROFILE_CACHE_FILE
         try:
             os.remove(file_to_remove)
         except OSError:

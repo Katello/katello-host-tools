@@ -1,12 +1,10 @@
 import sys
 from os import environ
 
-from rhsm import config as rhsmConfig
-
 if sys.version_info[0] == 3:
-    from configparser import ConfigParser, NoOptionError
+    from configparser import ConfigParser
 else:
-    from ConfigParser import ConfigParser, NoOptionError
+    from ConfigParser import ConfigParser
 
 
 def plugin_enabled(filepath, environment_variable=None, force=False):
@@ -28,6 +26,7 @@ def environment_disabled(variable):
 def combined_profiles_enabled():
     try:
         from rhsm.profile import EnabledRepos
+        # flake8: noqa
         return True
     except ImportError:
         return False
