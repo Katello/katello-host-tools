@@ -1,11 +1,11 @@
 import errno
 import os
-import sys
 import os.path
+import sys
 
-from katello.constants import ENABLED_REPOS_CACHE_FILE, ENABLED_REPOS_PLUGIN_CONF, DISABLE_ENABLE_REPOS_VAR
-from katello.uep import get_uep, lookup_consumer_id
-from katello.utils import plugin_enabled
+from katello.constants import DISABLE_ENABLE_REPOS_VAR, ENABLED_REPOS_CACHE_FILE, ENABLED_REPOS_PLUGIN_CONF, PROFILE_CACHE_FILE
+from katello.uep import get_manager, get_uep, lookup_consumer_id
+from katello.utils import combined_profiles_enabled, plugin_enabled
 
 from rhsm.connection import GoneException, RemoteServerException
 
@@ -40,12 +40,13 @@ def report_enabled_repos(consumer_id, report):
 def upload_enabled_repos_report(report, force=False):
     if not plugin_enabled(ENABLED_REPOS_PLUGIN_CONF, DISABLE_ENABLE_REPOS_VAR, force):
         return
-
-    content = report.content
     consumer_id = lookup_consumer_id()
     if consumer_id is None:
         error_message('Cannot upload enabled repos report, is this client registered?')
+    elif combined_profiles_enabled():
+        get_manager().profilelib._do_update()
     else:
+        content = report.content
         cache = EnabledRepoCache(consumer_id, content)
         if not cache.is_valid() and report_enabled_repos(consumer_id, content):
             cache.save()
@@ -58,8 +59,11 @@ class EnabledRepoCache:
 
     @staticmethod
     def remove_cache():
+        file_to_remove = ENABLED_REPOS_CACHE_FILE
+        if combined_profiles_enabled():
+            file_to_remove = PROFILE_CACHE_FILE
         try:
-            os.remove(ENABLED_REPOS_CACHE_FILE)
+            os.remove(file_to_remove)
         except OSError:
             pass
 

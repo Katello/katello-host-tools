@@ -23,8 +23,9 @@ class TestSendEnabledReport(unittest.TestCase):
     @patch('katello.repos.report_enabled_repos')
     @patch('katello.repos.EnabledRepoCache.is_valid')
     @patch('katello.repos.EnabledRepoCache.save')
+    @patch('katello.repos.combined_profiles_enabled', return_value=False)
     @unittest.skipIf(sys.version_info[0] > 2, "yum tests for PY2 only")
-    def test_send(self, cache_save, cache_valid, fake_report_enabled, fake_read, fake_report, plugin_enabled):
+    def test_send(self, combined_profiles_enabled, cache_save, cache_valid, fake_report_enabled, fake_read, fake_report, plugin_enabled):
         consumer_id = '1234'
         fake_certificate = Mock()
         fake_certificate.getConsumerId.return_value = consumer_id
@@ -47,8 +48,9 @@ class TestSendEnabledReport(unittest.TestCase):
     @patch('katello.repos.report_enabled_repos')
     @patch('katello.repos.EnabledRepoCache.is_valid')
     @patch('katello.repos.EnabledRepoCache.save')
+    @patch('katello.repos.combined_profiles_enabled', return_value=False)
     @unittest.skipIf(sys.version_info[0] > 2, "yum tests for PY2 only")
-    def test_cached(self, cache_save, cache_valid, fake_report_enabled, fake_read, fake_report, plugin_enabled):
+    def test_cached(self, combined_profiles_enabled, cache_save, cache_valid, fake_report_enabled, fake_read, fake_report, plugin_enabled):
         consumer_id = '1234'
         fake_certificate = Mock()
         fake_certificate.getConsumerId.return_value = consumer_id
@@ -69,8 +71,9 @@ class TestSendEnabledReport(unittest.TestCase):
     @patch('katello.repos.lookup_consumer_id')
     @patch('katello.repos.EnabledRepoCache.is_valid')
     @patch('katello.repos.EnabledRepoCache.save')
+    @patch('katello.repos.combined_profiles_enabled', return_value=False)
     @unittest.skipIf(sys.version_info[0] > 2, "yum tests for PY2 only")
-    def test_http_fail(self, cache_save, cache_valid, fake_consumer_id, fake_uep):
+    def test_http_fail(self, combined_profiles_enabled, cache_save, cache_valid, fake_consumer_id, fake_uep):
         fake_uep().conn.request_put.side_effect = RemoteServerException(500)
         cache_valid.return_value = False
 
