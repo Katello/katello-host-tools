@@ -1,10 +1,11 @@
 #!/usr/bin/python
 
 import optparse
+from os import path
 
-from katello.constants import REPOSITORY_PATH, ENABLED_REPOS_PLUGIN_CONF, DISABLE_ENABLE_REPOS_VAR
-from katello.enabled_report import EnabledReport
+from katello.constants import ENABLED_REPOS_PLUGIN_CONF, DISABLE_ENABLE_REPOS_VAR
 from katello.repos import EnabledRepoCache, upload_enabled_repos_report
+from katello.enabled_report import EnabledReport
 
 def parse_args():
     description = 'This report can be disabled by either disabling the package management plugin in ' +\
@@ -18,7 +19,7 @@ def main():
     (options, args) = parse_args()
     if options.force:
         EnabledRepoCache.remove_cache()
-    report = EnabledReport(REPOSITORY_PATH)
+    report = EnabledReport.factory()
     upload_enabled_repos_report(report, options.force)
 
 
