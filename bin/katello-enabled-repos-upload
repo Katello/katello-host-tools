@@ -2,9 +2,10 @@
 
 import optparse
 
-from katello.constants import REPOSITORY_PATH, ENABLED_REPOS_PLUGIN_CONF, DISABLE_ENABLE_REPOS_VAR
+from katello.constants import REPOSITORY_PATH, ZYPPER_REPOSITORY_PATH, ENABLED_REPOS_PLUGIN_CONF, DISABLE_ENABLE_REPOS_VAR, YUM, ZYPPER
 from katello.enabled_report import EnabledReport
 from katello.repos import EnabledRepoCache, upload_enabled_repos_report
+from katello.utils import combined_profiles_enabled
 
 def parse_args():
     description = 'This report can be disabled by either disabling the package management plugin in ' +\
@@ -18,7 +19,17 @@ def main():
     (options, args) = parse_args()
     if options.force:
         EnabledRepoCache.remove_cache()
-    report = EnabledReport(REPOSITORY_PATH)
+
+    report = None
+    if not combined_profiles_enabled():
+        if YUM:
+            repo_path = REPOSITORY_PATH
+        elif ZYPPER:
+            repo_path = ZYPPER_REPOSITORY_PATH
+        else:
+            raise IOError('Neither yum nor zypper can be used')
+        report = EnabledReport(repo_path)
+
     upload_enabled_repos_report(report, options.force)
 
 

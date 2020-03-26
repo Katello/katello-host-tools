@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 import sys
 import logging, traceback
 
 from katello.repos import upload_enabled_repos_report
+from katello.utils import combined_profiles_enabled
 from katello.enabled_report import EnabledReport
 from zypp_plugin import Plugin
 
@@ -15,7 +16,9 @@ class EnabledReposUpload(Plugin):
     def PLUGINEND(self, headers, body):
         logging.info("Uploading Enabled Repositories Report")
         try:
-            report = EnabledReport(ZYPPER_REPOSITORY_PATH)
+            report = None
+            if not combined_profiles_enabled():
+                report = EnabledReport(ZYPPER_REPOSITORY_PATH)
             logging.info("Uploading Enabled Repositories Report ->  %s" % str(report))
             upload_enabled_repos_report(report)
         except:

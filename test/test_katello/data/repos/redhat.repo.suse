@@ -1,0 +1,28 @@
+#
+# Certificate-Based Repositories
+# Managed by (rhsm) subscription-manager
+#
+# *** This file is auto-generated.  Changes made here will be over-written. ***
+# *** Use "subscription-manager repo-override --help" if you wish to make changes. ***
+#
+# If this file is empty and this system is subscribed consider
+# a "zypper lr" to refresh available repos
+#
+
+[Dev_Python_2_Module_15_SP1_x86_64_Python_2_Module_15_SP1_x86_64_SLE-Module-Python2-15-SP1-Pool_for_sle-15-x86_64]
+metadata_expire = 1
+enabled_metadata = 1
+baseurl = https://katello.example.com/pulp/repos/Dev/Library/Suse_15_SP1_v2/custom/Python_2_Module_15_SP1_x86_64/Python_2_Module_15_SP1_x86_64_SLE-Module-Python2-15-SP1-Pool_for_sle-15-x86_64?ssl_verify=host&ssl_clientcert=%2Fetc%2Fpki%2Fentitlement%2F160562464097848.pem&ssl_clientkey=%2Fetc%2Fpki%2Fentitlement%2F160562464097848-key.pem&ssl_capath=%2Fetc%2Frhsm%2Fca
+name = Python 2 Module 15 SP1 x86_64 SLE-Module-Python2-15-SP1-Pool for sle-15-x86_64
+enabled = 1
+gpgcheck = 0
+sslverify = 1
+
+[Dev_Basesystem_Module_15_SP1_x86_64_Basesystem_Module_15_SP1_x86_64_SLE-Module-Basesystem15-SP1-Pool_for_sle-15-x86_64]
+metadata_expire = 1
+enabled_metadata = 1
+baseurl = https://katello.example.com/pulp/repos/Dev/Library/Suse_15_SP1_v2/custom/Basesystem_Module_15_SP1_x86_64/Basesystem_Module_15_SP1_x86_64_SLE-Module-Basesystem15-SP1-Pool_for_sle-15-x86_64?ssl_verify=host&ssl_clientcert=%2Fetc%2Fpki%2Fentitlement%2F719324538639803.pem&ssl_clientkey=%2Fetc%2Fpki%2Fentitlement%2F719324538639803-key.pem&ssl_capath=%2Fetc%2Frhsm%2Fca
+name = Basesystem Module 15 SP1 x86_64 SLE-Module-Basesystem15-SP1-Pool for sle-15-x86_64
+enabled = 0
+gpgcheck = 0
+sslverify = 1
