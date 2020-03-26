@@ -5,6 +5,7 @@ from katello.repos import upload_enabled_repos_report
 
 from logging import Logger
 
+from katello.utils import combined_profiles_enabled
 from katello.enabled_report import EnabledReport
 from katello.constants import REPOSITORY_PATH
 
@@ -15,7 +16,9 @@ def close_hook(conduit):
     if not conduit.confBool("main", "supress_debug"):
         conduit.info(2, "Uploading Enabled Repositories Report")
     try:
-        report = EnabledReport(REPOSITORY_PATH)
+        report = None
+        if not combined_profiles_enabled():
+            report = EnabledReport(REPOSITORY_PATH)
         upload_enabled_repos_report(report)
     except:
         if not conduit.confBool("main", "supress_errors"):

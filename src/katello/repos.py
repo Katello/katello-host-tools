@@ -43,7 +43,7 @@ def upload_enabled_repos_report(report, force=False):
     consumer_id = lookup_consumer_id()
     if consumer_id is None:
         error_message('Cannot upload enabled repos report, is this client registered?')
-    elif combined_profiles_enabled():
+    elif report is None:
         get_manager().profilelib._do_update()
     else:
         content = report.content
