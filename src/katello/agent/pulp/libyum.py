@@ -36,7 +36,15 @@ class Pattern(object):
         'arch',
     )
 
-    def __init__(self, name, epoch='*', version='*', release='*', arch='*'):
+    FIELDS = (
+        ('epoch', ('', ':')),
+        ('name', ('', '')),
+        ('version', ('-', '')),
+        ('release', ('-', '')),
+        ('arch', ('.', '')),
+    )
+
+    def __init__(self, name, epoch='', version='', release='', arch=''):
         """
         NEVRA
 
@@ -57,13 +65,17 @@ class Pattern(object):
        return str(self) == str(other)
 
     def __str__(self):
-        fmt = '{epoch}:{name}-{version}-{release}.{arch}'
-        return fmt.format(
-            epoch=self.epoch,
-            name=self.name,
-            version=self.version,
-            release=self.release,
-            arch=self.arch)
+        pattern = []
+        for name, sep in self.FIELDS:
+            value = getattr(self, name)
+            if not value:
+                continue
+            if sep[0]:
+                pattern.append(sep[0])
+            pattern.append(value)
+            if sep[1]:
+                pattern.append(sep[1])
+        return ''.join(pattern)
 
 
 class TransactionReport(object):
