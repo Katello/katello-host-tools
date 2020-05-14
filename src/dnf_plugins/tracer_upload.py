@@ -1,12 +1,8 @@
-import time
-
 import dnf.cli
 
 from dnfpluginscore import logger
 
-from katello.tracer import upload_tracer_profile
-
-from tracer import Package, Query
+from katello.tracer import query_affected_apps, upload_tracer_profile
 
 
 class TracerUploadCommand(dnf.cli.Command):
@@ -17,7 +13,7 @@ class TracerUploadCommand(dnf.cli.Command):
         self.cli.demands.root_user = True
 
     def run(self):
-        upload_tracer_profile(query_apps, None)
+        upload_tracer_profile(query_affected_apps, None)
 
 
 class TracerUpload(dnf.Plugin):
@@ -31,33 +27,22 @@ class TracerUpload(dnf.Plugin):
 
     def transaction(self):
         conf = self.read_config(self.base.conf)
-        enabled = (conf.has_section('main')
-                   and conf.has_option('main', 'enabled')
-                   and conf.getboolean('main', 'enabled'))
+        enabled = (conf.has_section('main') and
+                   conf.has_option('main', 'enabled') and
+                   conf.getboolean('main', 'enabled'))
 
         if enabled:
-            if (conf.has_option('main', 'supress_debug') and not conf.getboolean('main', 'supress_debug')):
+            if (conf.has_option('main', 'supress_debug') and not
+               conf.getboolean('main', 'supress_debug')):
                 logger.info("Uploading Tracer Profile")
             try:
-                upload_tracer_profile(query_apps, self)
+                """
+                Unlike yum, the transaction is already written to the DB
+                by this point so we don't need to do any work to give Tracer
+                a list of affected apps.
+                """
+                upload_tracer_profile(query_affected_apps, self)
             except Exception:
-                if (conf.has_option('main', 'supress_errors') and not conf.getboolean('main', 'supress_errors')):
+                if (conf.has_option('main', 'supress_errors') and not
+                   conf.getboolean('main', 'supress_errors')):
                     logger.error("Unable to upload Tracer Profile")
-
-
-def query_apps(plugin):
-    query = Query()
-    if plugin:
-        packages = []
-        iset = set(package.name for package in plugin.base.transaction.install_set)
-        rset = set(package.name for package in plugin.base.transaction.remove_set)
-        installed = set(package.name for package in plugin.base.sack.query().installed())
-
-        # When running via dnf we need to pass tracer a list of packages and
-        # their last modified time so it has no need to access the rpmdb (which
-        # would fail as dnf has a lock on it)
-        packages = [Package(p, time.time()) for p in (iset | rset | installed)]
-
-        return query.from_packages(packages).now().affected_applications().get()
-
-    return query.affected_applications().get()

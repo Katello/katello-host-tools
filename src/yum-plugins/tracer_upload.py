@@ -14,9 +14,11 @@ def query_apps(conduit):
 
     # When running via yum we need to pass tracer a list of packages and
     # their last modified time so it has no need to access the rpmdb (which
-    # would fail as yum/dnf has a lock on it)
+    # would fail as yum has a lock on it)
     packages = []
-    pkgs = conduit.getTsInfo().getMembers()  # Packages in the current transation
+
+    # Packages in the current transation
+    pkgs = conduit.getTsInfo().getMembers()
     for pkg in pkgs:
         pkg.modified = time.time()
         packages.append(pkg)
