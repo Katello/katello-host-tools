@@ -412,6 +412,7 @@ class LibDnf(dnf.Base):
         """
         super(LibDnf, self).__init__()
         self.conf.assumeyes = True
+        self.conf.substitutions.update_from_etc("/")
 
     def open(self):
         """
