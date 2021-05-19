@@ -1,0 +1,3 @@
+#! /usr/bin/dh-exec
+extra/81-tracer-upload-apt => /etc/apt/apt.conf.d/81-tracer-upload
+src/apt_plugins/tracer_upload.py => /usr/bin/tracer-upload
