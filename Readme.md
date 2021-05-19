@@ -60,6 +60,20 @@ make install
 # use manual test commands above
 ```
 
+## Debian / Ubuntu packages
+
+To create a debian or ubuntu package, type the following:
+```sh
+dpkg-buildpackage -us -uc
+```
+
+This will build:
+
+- python3-katello-host-tools_3.5.5-1_all.deb
+- katello-host-tools-tracer_3.5.5-1_all.deb
+
+The packages need to have subscription-manager installed. Build it for your own from [candlepin](https://github.com/candlepin/subscription-manager) or use pre-built packages from [https://apt.atix.de](https://apt.atix.de)
+
 ## Contribute
 
 Please, open your PR and join our [community](https://theforeman.org/contribute.html)!
