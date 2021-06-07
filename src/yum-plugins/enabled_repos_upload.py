@@ -5,7 +5,7 @@ from katello.repos import upload_enabled_repos_report
 
 from logging import Logger
 
-from katello.utils import combined_profiles_enabled
+from katello.utils import combined_profiles_enabled, is_root_user
 from katello.enabled_report import EnabledReport
 from katello.constants import REPOSITORY_PATH
 
@@ -13,6 +13,8 @@ requires_api_version = '2.3'
 plugin_type = (TYPE_CORE, TYPE_INTERACTIVE)
 
 def close_hook(conduit):
+    if not is_root_user():
+        return conduit.error(2, "Skipping Enabled Repositories Upload because you are not logged in as root")
     if not conduit.confBool("main", "supress_debug"):
         conduit.info(2, "Uploading Enabled Repositories Report")
     try:

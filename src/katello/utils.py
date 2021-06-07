@@ -1,4 +1,5 @@
 import sys
+import os
 from os import environ
 
 if sys.version_info[0] == 3:
@@ -23,6 +24,7 @@ def config_enabled(filepath):
 def environment_disabled(variable):
     return variable is not None and variable in environ and environ[variable] != ''
 
+
 def combined_profiles_enabled():
     try:
         from rhsm.profile import EnabledRepos
@@ -30,3 +32,7 @@ def combined_profiles_enabled():
         return True
     except ImportError:
         return False
+
+
+def is_root_user():
+    return os.getuid() == 0
