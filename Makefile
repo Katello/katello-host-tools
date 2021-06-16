@@ -2,6 +2,8 @@ RHEL5=$(shell grep -q -i 'release 5' /etc/redhat-release)
 PYTHON3=$(shell command -v python3 && command -v pip3)
 USE_SELINUX=$(shell test -d /sys/fs/selinux && echo ":Z")
 DOCKERFILE  ?= $(CURDIR)/images/Dockerfile.el7
+DIST=$(shell echo $(DOCKERFILE) | tr "." "\n" | tail -1 | tr '[:upper:]' '[:lower:]')
+IMAGE ?= kht-builder-$(DIST)
 ifneq ($(PYTHON3),)
 PYTHON ?= python3
 PIP ?= pip3
@@ -50,10 +52,13 @@ test: test-install
 	$(PYTHON) test/unittest_suite.py
 
 docker-build:
-	$(CONTAINER_EXEC) build -f $(DOCKERFILE) -t kht-builder .
+	$(CONTAINER_EXEC) build -f $(DOCKERFILE) -t $(IMAGE) .
 
 docker-run: docker-build
-	$(CONTAINER_EXEC) run --rm -itv $(CURDIR):/app$(USE_SELINUX) kht-builder bash
+	$(CONTAINER_EXEC) run --rm -itv $(CURDIR):/app$(USE_SELINUX) $(IMAGE) bash
 
 docker-test: docker-build
-	$(CONTAINER_EXEC) run --rm -itv $(CURDIR):/app$(USE_SELINUX) kht-builder ./test/test_runner.sh
+	$(CONTAINER_EXEC) run --rm -v $(CURDIR):/app$(USE_SELINUX) $(IMAGE) ./test/test_runner.sh
+
+docker-clean:
+	$(CONTAINER_EXEC) image rm $(IMAGE)

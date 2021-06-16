@@ -1,0 +1,4 @@
+FROM fedora:33
+
+RUN dnf install pip make python3-gofer python3-dnf-plugins-core python3-tracer python3-gofer-proton subscription-manager -y && yum clean all
+WORKDIR /app
