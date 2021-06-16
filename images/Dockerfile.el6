@@ -1,8 +1,10 @@
 FROM centos:6
 
+RUN sed -i -e 's/^mirrorlist/#mirrorlist/g' -e 's/^#baseurl=http:\/\/mirror.centos.org\/centos\/$releasever\//baseurl=http:\/\/vault.centos.org\/6.10\//g' /etc/yum.repos.d/CentOS-Base.repo
 RUN yum install -y wget epel-release && yum clean all
 RUN yum install -y https://yum.theforeman.org/client/1.21/el6/x86_64/foreman-client-release.rpm && yum clean all
 RUN yum install make gofer python-gofer-proton python-pulp-agent-lib subscription-manager python-pip -y && yum clean all
 
-RUN pip install setuptools==36.7.0 mock==1.0.1
+RUN yum install -y https://cbs.centos.org/kojifiles/packages/python-unittest2/0.5.1/3.el6/noarch/python-unittest2-0.5.1-3.el6.noarch.rpm && yum clean all
+RUN wget -O /usr/lib/python2.6/site-packages/mock.py https://raw.githubusercontent.com/testing-cabal/mock/1.0.1/mock.py --no-check-certificate
 WORKDIR /app
