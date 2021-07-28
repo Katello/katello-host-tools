@@ -12,32 +12,17 @@
 from os import path, environ
 import logging
 from katello.tracer import upload_tracer_profile
+from katello.zypper_tracer import collect_apps
 from zypp_plugin import Plugin
 
 
-# The path is defined in zypper, see https://github.com/openSUSE/libzypp/blob/master/zypp/target/TargetImpl.cc
-REBOOT_NEEDED_FLAG = "/var/run/reboot-needed"
-
-class ZypperTracerApp:
-    pass
-
 class TracerUploadPlugin(Plugin):
-    def collect_apps(self, _plugin):
-        apps = []
-        if path.isfile(REBOOT_NEEDED_FLAG):
-            app = ZypperTracerApp()
-            app.name = "kernel"
-            app.helper = "You will have to reboot your computer"
-            app.type = "static"
-            apps.append(app)
-        return apps
-
     def PLUGINEND(self, headers, body):
         logging.info("PLUGINEND")
 
         logging.info("Uploading Tracer Profile")
         try:
-            upload_tracer_profile(self.collect_apps)
+            upload_tracer_profile(collect_apps)
         except:
             logging.error("Unable to upload Tracer Profile")
 
