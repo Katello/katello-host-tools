@@ -1,5 +1,5 @@
-RHEL5=$(shell grep -q -i 'release 5' /etc/redhat-release)
-PYTHON3=$(shell command -v python3 && command -v pip3)
+RHEL5=$(shell grep -q -i 'release 5' /etc/redhat-release 2>/dev/null || false)
+PYTHON3=$(shell which python3 && which pip3)
 USE_SELINUX=$(shell test -d /sys/fs/selinux && echo ":Z")
 DOCKERFILE  ?= $(CURDIR)/images/Dockerfile.el7
 DIST=$(shell echo $(DOCKERFILE) | tr "." "\n" | tail -1 | tr '[:upper:]' '[:lower:]')
@@ -12,7 +12,7 @@ PYTHON ?= python
 PIP ?= pip
 endif
 
-PODMAN=$(shell command -v podman)
+PODMAN=$(shell which podman)
 ifneq ($(PODMAN),)
 CONTAINER_EXEC ?= podman
 else
