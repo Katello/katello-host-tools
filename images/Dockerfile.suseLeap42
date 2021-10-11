@@ -1,6 +1,6 @@
 FROM opensuse/leap:42
 
-RUN zypper addrepo -c --no-gpgcheck https://download.opensuse.org/repositories/home:/kahowell/openSUSE_Leap_42.2/ subscription-manager
+RUN zypper addrepo -c --no-gpgcheck http://download.opensuse.org/repositories/home:/kahowell/openSUSE_Leap_42.2/ subscription-manager
 
 RUN zypper install -y subscription-manager python-pip make zypp-plugin-python && zypper clean
 
