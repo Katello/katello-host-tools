@@ -12,29 +12,14 @@
 from os import path, environ
 import logging
 from katello.tracer import upload_tracer_profile
+from katello.apt_tracer import collect_apps
 
-
-# The file is created by /etc/kernel/postinst.d/unattended-upgrades (part of unattended-upgrades pkg)
-REBOOT_NEEDED_FLAG = "/var/run/reboot-required"
-
-class TracerApp:
-    pass
 
 class TracerUpload:
-    def collect_apps(self, _plugin):
-        apps = []
-        if path.isfile(REBOOT_NEEDED_FLAG):
-            app = TracerApp()
-            app.name = "kernel"
-            app.helper = "You will have to reboot your computer"
-            app.type = "static"
-            apps.append(app)
-        return apps
-
     def send(self):
         logging.info("Uploading Tracer Profile")
         try:
-            upload_tracer_profile(self.collect_apps)
+            upload_tracer_profile(collect_apps)
         except:
             logging.error("Unable to upload Tracer Profile")
 
