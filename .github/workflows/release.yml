@@ -1,0 +1,29 @@
+name: release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release:
+    name: PyPI
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'Katello'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Install wheel
+        run: pip install wheel
+      - name: Build sdist and wheel
+        run: python setup.py sdist bdist_wheel
+        working-directory: src
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.4.2
+        with:
+          user: __token__
+          password: '${{ secrets.PYPI_PASSWORD }}'
+          packages_dir: src/dist/
