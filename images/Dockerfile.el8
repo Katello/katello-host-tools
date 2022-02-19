@@ -1,6 +1,5 @@
-FROM centos:8
+FROM quay.io/centos/centos:stream8
 
-RUN yum install -y https://yum.theforeman.org/client/2.5/el8/x86_64/foreman-client-release.rpm && yum clean all
-RUN yum install -y epel-release && yum clean all
-RUN dnf install make python3-gofer python3-dnf-plugins-core python3-tracer python3-gofer-proton subscription-manager -y && yum clean all
+RUN dnf install -y https://yum.theforeman.org/client/nightly/el8/x86_64/foreman-client-release.rpm && dnf clean all
+RUN dnf install make python3-gofer python3-dnf-plugins-core python3-tracer python3-gofer-proton subscription-manager -y && dnf clean all
 WORKDIR /app
