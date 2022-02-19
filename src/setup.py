@@ -39,4 +39,11 @@ setup(
         'Development Status :: 3 - Alpha',
     ],
     install_requires=[],
+    entry_points={
+        'console_scripts': [
+            'katello-enabled-repos-upload=katello.scripts:enabled_repos_upload',
+            'katello-package-upload=katello.scripts:package_upload',
+            'katello-tracer-upload=katello.scripts:tracer_upload',
+        ],
+    },
 )

@@ -23,11 +23,11 @@ if [ ${PYTHON} = "python3" ]; then
 fi
 
 if [ ${PYTHON} = "python2" ]; then
-  for binary in bin/*; do
-    if [[ "${binary}" = "bin/katello-tracer-upload" ]] && ! rpm -q python2-tracer --quiet; then
+  for binary in katello-enabled-repos-upload katello-package-upload katello-tracer-upload ; do
+    if [[ "${binary}" = "katello-tracer-upload" ]] && ! rpm -q python2-tracer --quiet; then
       continue;
     fi;
-    python -- ${binary} -f ;
-    python -- ${binary} -help ;
+    ${binary} -f
+    ${binary} -help
   done
 fi;

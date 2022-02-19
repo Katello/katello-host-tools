@@ -6,7 +6,7 @@ This repository is a collection of software tools which are useful for [clients 
 
 ```
 make install
-./bin/katello-enabled-repos-upload
+katello-enabled-repos-upload
 ```
 
 #### With Docker
@@ -16,7 +16,7 @@ make docker-run
 
 # In the container shell:
 make install
-./bin/katello-enabled-repos-upload
+katello-enabled-repos-upload
 ```
 
 ## Test
