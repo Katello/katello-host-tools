@@ -8,11 +8,11 @@ jobs:
       max-parallel: 1
       matrix:
         dockerfile:
-          - images/Dockerfile.el6
-          - images/Dockerfile.el7
           - images/Dockerfile.el8
-          - images/Dockerfile.f33
+          - images/Dockerfile.el7
+          - images/Dockerfile.el6
           - images/Dockerfile.f34
+          - images/Dockerfile.f33
           - images/Dockerfile.suseLeap42
     steps:
       - uses: actions/checkout@v2
