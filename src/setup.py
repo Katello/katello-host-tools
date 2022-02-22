@@ -18,27 +18,22 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='katello-agent',
-    version='3.5.7',
-    description='Katello Agent',
-    author='Jeff Ortel',
-    author_email='jortel@redhat.com',
+    name='katello-host-tools',
+    version='4.0.0',
+    description='Libraries and command-line utilities for keeping Katello clients in sync and up to date',
+    author='The Foreman Project',
+    author_email='no-email@theforeman.org',
     url='https://github.com/Katello/katello-host-tools',
     license='GPLv2+',
     packages=find_packages(),
-    scripts=[],
     include_package_data=False,
-    data_files=[],
     classifiers=[
         'License :: OSI Approved :: GNU General Puclic License (GPL)',
         'Programming Language :: Python',
         'Operating System :: POSIX',
         'Topic :: Content Management and Delivery',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        'Intended Audience :: Developers',
-        'Development Status :: 3 - Alpha',
     ],
-    install_requires=[],
     entry_points={
         'console_scripts': [
             'katello-enabled-repos-upload=katello.scripts:enabled_repos_upload',
