@@ -17,16 +17,13 @@
 
 from setuptools import setup, find_packages
 
-requires = [
-]
-
 setup(
     name='katello-agent',
     version='3.5.7',
     description='Katello Agent',
     author='Jeff Ortel',
     author_email='jortel@redhat.com',
-    url='',
+    url='https://github.com/Katello/katello-host-tools',
     license='GPLv2+',
     packages=find_packages(),
     scripts=[],
@@ -41,6 +38,12 @@ setup(
         'Intended Audience :: Developers',
         'Development Status :: 3 - Alpha',
     ],
-    install_requires=requires,
+    install_requires=[],
+    entry_points={
+        'console_scripts': [
+            'katello-enabled-repos-upload=katello.scripts:enabled_repos_upload',
+            'katello-package-upload=katello.scripts:package_upload',
+            'katello-tracer-upload=katello.scripts:tracer_upload',
+        ],
+    },
 )
-
