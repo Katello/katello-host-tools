@@ -19,7 +19,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='katello-host-tools',
-    version='4.0.0',
+    version='4.0.1',
     description='Libraries and command-line utilities for keeping Katello clients in sync and up to date',
     author='The Foreman Project',
     author_email='no-email@theforeman.org',
@@ -28,10 +28,9 @@ setup(
     packages=find_packages(),
     include_package_data=False,
     classifiers=[
-        'License :: OSI Approved :: GNU General Puclic License (GPL)',
+        'License :: OSI Approved :: GNU General Public License (GPL)',
         'Programming Language :: Python',
         'Operating System :: POSIX',
-        'Topic :: Content Management and Delivery',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     entry_points={
