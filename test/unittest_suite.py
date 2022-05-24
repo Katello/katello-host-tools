@@ -10,8 +10,7 @@ if sys.version_info[0] == 2:
         'test_katello.test_enabled_report',
         'test_katello.test_packages',
         'test_katello.test_repos',
-        'test_katello.test_utils',
-        'test_rhsm_fact_plugin'
+        'test_katello.test_utils'
     ]
 
     try:
