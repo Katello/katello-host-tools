@@ -8,7 +8,7 @@ def collect_apps():
 
 try:
     imp.find_module('apt')
-    from katello.apt_tracer import collect_apps
+    from katello.deb_tracer import collect_apps
     apt = True
 except ImportError as e:
     apt = False
