@@ -1,7 +1,8 @@
 FROM opensuse/leap:42
 
 RUN zypper addrepo -c --no-gpgcheck http://download.opensuse.org/repositories/home:/kahowell/openSUSE_Leap_42.2/ subscription-manager
-
-RUN zypper install -y subscription-manager python-pip make zypp-plugin-python && zypper clean
+RUN zypper removerepo 'OSS Update'
+RUN zypper clean --all
+RUN zypper install -y make python-pip subscription-manager zypp-plugin-python which python-setuptools lsof
 
 WORKDIR /app
