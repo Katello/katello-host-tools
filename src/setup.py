@@ -27,6 +27,7 @@ setup(
     license='GPLv2+',
     packages=find_packages(),
     include_package_data=False,
+    package_data={ '': [ '../katello/contrib/etc/*/*/*.conf', '../katello/contrib/extra/*' ] },
     classifiers=[
         'License :: OSI Approved :: GNU General Public License (GPL)',
         'Programming Language :: Python',
