@@ -48,15 +48,14 @@ def use_needrestart():
         if output[0] == "NEEDRESTART-KSTA":
             ksta = int(output[1])
         elif output[0] == "NEEDRESTART-SVC":
-            services.append(output[1].replace(".service", ""))
+            services.append(output[1].replace(".service", "").strip())
 
     if ksta in (2, 3):
         app = AptTracerApp("kernel", "Please restart your system", "static")
         apps.append(app)
-    
-    
+
     for service in services:
-        app = AptTracerApp(service, "systemctl restart" + service, "systemd")
+        app = AptTracerApp(service, "systemctl restart " + service, "systemd")
         apps.append(app)
 
     return apps
