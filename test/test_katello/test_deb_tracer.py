@@ -118,7 +118,7 @@ class TestUseNeedRestart(unittest.TestCase):
         self.assertTrue(len(apps) == 1)
         self.assertIsInstance(apps[0], AptTracerApp)
         # Validate service
-        self.assertEqual(apps[0].name, " systemd-logind")
+        self.assertEqual(apps[0].name, "systemd-logind")
         self.assertEqual(apps[0].helper, "systemctl restart systemd-logind")
         self.assertEqual(apps[0].type, "systemd")
 
@@ -137,12 +137,12 @@ class TestUseNeedRestart(unittest.TestCase):
         self.assertTrue(len(apps) == 2)
         self.assertIsInstance(apps[1], AptTracerApp)
         # Validate service
-        self.assertEqual(apps[1].name, " systemd-logind")
+        self.assertEqual(apps[1].name, "systemd-logind")
         self.assertEqual(apps[1].helper, "systemctl restart systemd-logind")
         self.assertEqual(apps[1].type, "systemd")
         # Validate kernel
         self.assertEqual(apps[0].name, "kernel")
-        self.assertEqual(apps[0].helper, "Please restart your system") 
+        self.assertEqual(apps[0].helper, "Please restart your system")
         self.assertEqual(apps[0].type, "static")
 
     @patch("katello.deb_tracer.needrestart")
