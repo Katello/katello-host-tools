@@ -12,7 +12,7 @@
 from os import path, environ
 import logging
 from katello.tracer import upload_tracer_profile
-from katello.apt_tracer import collect_apps
+from katello.deb_tracer import collect_apps
 
 
 class TracerUpload:

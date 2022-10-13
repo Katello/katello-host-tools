@@ -4,7 +4,7 @@ import sys
 import imp
 
 def collect_apps():
-    raise Exception("This is not the method you want to use. Normally, this method should be provided by apt_tracer or zypper_tracer")
+    raise NotImplementedError("This is not the method you want to use. Normally, this method should be provided by deb_tracer or zypper_tracer")
 
 try:
     imp.find_module('apt')
