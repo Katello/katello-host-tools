@@ -1,2 +1,2 @@
 # Send a new Tracer report after a reboot
-@reboot root sleep 60 && /sbin/katello-tracer-upload > /dev/null 2>&1
+@reboot root sleep 60 && PATH=/usr/sbin:/usr/bin:/sbin:/bin /sbin/katello-tracer-upload >/dev/null 2>&1
