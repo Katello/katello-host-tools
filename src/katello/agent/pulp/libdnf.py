@@ -256,7 +256,7 @@ class Package(API):
             if advisories:
                 for ad, packages in lib.applicable_advisories(AdvisoryFilter(ids=advisories)):
                     for name, evr in packages:
-                        patterns.add(name)
+                        patterns.add(name + '-' + evr)
                 if patterns:
                    lib.upgrade(patterns)
             else:

@@ -23,8 +23,9 @@ class TestLibDnf(unittest.TestCase):
         package = libdnf.Package()
         package.update([],advisories)
 
-        #strip the evrs out of the package
-        packages = set([pack[0] for pack in packages])
+        # ensure the packages have evrs included
+        # https://projects.theforeman.org/issues/35759
+        packages = set([pack[0] + '-' + pack[1] for pack in packages])
         mock_libdnf.upgrade.assert_called_with(packages)
 
   def test_package_update_all(self):
