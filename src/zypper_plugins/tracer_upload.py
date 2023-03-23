@@ -12,7 +12,7 @@
 from os import path, environ
 import logging
 from katello.tracer import upload_tracer_profile
-from katello.zypper_tracer import collect_apps
+from katello.tracer.zypper import collect_apps
 from zypp_plugin import Plugin
 
 

@@ -1,5 +1,5 @@
 import unittest
-from katello.deb_tracer import (
+from katello.tracer.deb import (
     needrestart,
     has_needrestart,
     use_flag,
@@ -52,13 +52,13 @@ NEEDRESTART-SVC: user@0.service """
 
 
 class TestCollectApps(unittest.TestCase):
-    @patch("katello.deb_tracer.which")
+    @patch("katello.tracer.deb.which")
     def test_has_needrestart_not_python3(self, m):
         m.return_value = None
         self.assertEqual(has_needrestart(), False)
         self.assertEqual(m.call_args.args, ("needrestart",))
 
-    @patch("katello.deb_tracer.which")
+    @patch("katello.tracer.deb.which")
     def test_has_needrestart_ok_python3(self, m):
         m.return_value = "/usr/sbin/needrestart"
         self.assertEqual(has_needrestart(), True)
@@ -66,7 +66,7 @@ class TestCollectApps(unittest.TestCase):
 
 
 class TestUseFlag(unittest.TestCase):
-    @patch("katello.deb_tracer.path.isfile")
+    @patch("katello.tracer.deb.path.isfile")
     def test_reboot_needed_flag(self, m):
         m.return_value = True
         apps = use_flag()
@@ -78,7 +78,7 @@ class TestUseFlag(unittest.TestCase):
         self.assertEqual(apps[0].helper, "You will have to reboot your computer")
         self.assertEqual(apps[0].type, "static")
 
-    @patch("katello.deb_tracer.path.isfile")
+    @patch("katello.tracer.deb.path.isfile")
     def test_not_reboot_needed_flag(self, m):
         m.return_value = False
         apps = use_flag()
@@ -86,7 +86,7 @@ class TestUseFlag(unittest.TestCase):
 
 
 class TestUseNeedRestart(unittest.TestCase):
-    @patch("katello.deb_tracer.needrestart")
+    @patch("katello.tracer.deb.needrestart")
     def test_system_reboot(self, m):
         output = [
             "NEEDRESTART-VER: 3.5",
@@ -104,7 +104,7 @@ class TestUseNeedRestart(unittest.TestCase):
         self.assertEqual(apps[0].helper, "Please restart your system")
         self.assertEqual(apps[0].type, "static")
 
-    @patch("katello.deb_tracer.needrestart")
+    @patch("katello.tracer.deb.needrestart")
     def test_service_restart(self, m):
         output = [
             "NEEDRESTART-VER: 3.5",
@@ -122,7 +122,7 @@ class TestUseNeedRestart(unittest.TestCase):
         self.assertEqual(apps[0].helper, "systemctl restart systemd-logind")
         self.assertEqual(apps[0].type, "systemd")
 
-    @patch("katello.deb_tracer.needrestart")
+    @patch("katello.tracer.deb.needrestart")
     def test_service_and_system_restart(self, m):
         output = [
             "NEEDRESTART-VER: 3.5",
@@ -145,7 +145,7 @@ class TestUseNeedRestart(unittest.TestCase):
         self.assertEqual(apps[0].helper, "Please restart your system")
         self.assertEqual(apps[0].type, "static")
 
-    @patch("katello.deb_tracer.needrestart")
+    @patch("katello.tracer.deb.needrestart")
     def test_no_restart_needed(self, m):
         output = [
             "NEEDRESTART-VER: 3.5",
