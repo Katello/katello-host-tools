@@ -4,11 +4,11 @@ import sys
 import imp
 
 def collect_apps():
-    raise NotImplementedError("This is not the method you want to use. Normally, this method should be provided by deb_tracer or zypper_tracer")
+    raise NotImplementedError("This is not the method you want to use. Normally, this method should be provided by tracer.deb or tracer.zypper")
 
 try:
     imp.find_module('apt')
-    from katello.deb_tracer import collect_apps
+    from katello.tracer.deb import collect_apps
     apt = True
 except ImportError as e:
     apt = False
@@ -30,7 +30,7 @@ if yum or dnf:
 
 try:
     imp.find_module('zypp_plugin')
-    from katello.zypper_tracer import collect_apps
+    from katello.tracer.zypper import collect_apps
     zypp = True
 except ImportError:
     zypp = False
