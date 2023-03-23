@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import optparse
 
 from katello.constants import (DISABLE_ENABLE_REPOS_VAR, DISABLE_PACKAGE_PROFILE_VAR,
