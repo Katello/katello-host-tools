@@ -4,7 +4,7 @@ from dnf_support import PluginTestCase, configure_command
 import unittest2 as unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/dnf_plugins'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/dnf-plugins'))
 import tracer_upload
 
 from mock import Mock, patch
