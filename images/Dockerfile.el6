@@ -4,7 +4,7 @@ RUN sed -i -e 's/^mirrorlist/#mirrorlist/g' -e 's/^#baseurl=http:\/\/mirror.cent
 RUN yum install -y wget epel-release && yum clean all
 # Foreman 2.5 was the last version to support EL6
 RUN yum install -y https://yum.theforeman.org/client/2.5/el6/x86_64/foreman-client-release.rpm && yum clean all
-RUN yum install make gofer python-gofer-proton python-pulp-agent-lib subscription-manager python-pip -y && yum clean all
+RUN yum install make subscription-manager python-pip -y && yum clean all
 
 RUN yum install -y https://cbs.centos.org/kojifiles/packages/python-unittest2/0.5.1/3.el6/noarch/python-unittest2-0.5.1-3.el6.noarch.rpm && yum clean all
 RUN wget -O /usr/lib/python2.6/site-packages/mock.py https://raw.githubusercontent.com/testing-cabal/mock/1.0.1/mock.py --no-check-certificate

@@ -1,7 +1,7 @@
 RHEL5=$(shell grep -q -i 'release 5' /etc/redhat-release 2>/dev/null || false)
 PYTHON3=$(shell which python3 && which pip3)
 USE_SELINUX=$(shell test -d /sys/fs/selinux && echo ":Z")
-DOCKERFILE  ?= $(CURDIR)/images/Dockerfile.el7
+DOCKERFILE  ?= $(CURDIR)/images/Dockerfile.el9
 DIST=$(shell echo $(DOCKERFILE) | tr "." "\n" | tail -1 | tr '[:upper:]' '[:lower:]')
 IMAGE ?= kht-builder-$(DIST)
 ifneq ($(PYTHON3),)

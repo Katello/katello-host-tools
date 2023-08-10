@@ -3,5 +3,5 @@
 *.swo
 src/build
 src/dist
-src/katello_agent.egg-info/
+src/katello_host_tools.egg-info/
 test/data
