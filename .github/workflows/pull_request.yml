@@ -23,6 +23,7 @@ jobs:
       max-parallel: 1
       matrix:
         dockerfile:
+          - images/Dockerfile.el9
           - images/Dockerfile.el8
           - images/Dockerfile.el7
           - images/Dockerfile.el6
