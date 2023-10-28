@@ -17,7 +17,7 @@ def query_apps(conduit):
     # would fail as yum has a lock on it)
     packages = []
 
-    # Packages in the current transation
+    # Packages in the current transaction
     pkgs = conduit.getTsInfo().getMembers()
     for pkg in pkgs:
         pkg.modified = time.time()
