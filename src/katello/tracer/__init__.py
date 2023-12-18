@@ -4,36 +4,35 @@ import sys
 import imp
 
 def collect_apps():
-    raise NotImplementedError("This is not the method you want to use. Normally, this method should be provided by tracer.deb or tracer.zypper")
+    raise NotImplementedError("Couldn't detect package manager. Failed to query affected apps!")
 
 try:
     imp.find_module('apt')
     from katello.tracer.deb import collect_apps
-    apt = True
-except ImportError as e:
-    apt = False
+except ImportError:
+    pass
 
 try:
     imp.find_module('dnf')
-    dnf = True
+    tracer = True
 except ImportError:
-    dnf = False
+    try:
+        imp.find_module('yum')
+        tracer = True
+    except ImportError:
+        tracer = False
 
-try:
-    imp.find_module('yum')
-    yum = True
-except ImportError:
-    yum = False
-
-if yum or dnf:
+if tracer:
     from tracer.query import Query
+    def collect_apps():
+        query = Query()
+        return query.affected_applications().get()
 
 try:
     imp.find_module('zypp_plugin')
     from katello.tracer.zypper import collect_apps
-    zypp = True
 except ImportError:
-    zypp = False
+    pass
 
 
 def upload_tracer_profile(queryfunc, plugin=None):
@@ -48,13 +47,7 @@ def upload_tracer_profile(queryfunc, plugin=None):
 
 
 def query_affected_apps(plugin=None):
-    if yum or dnf:
-        query = Query()
-        return query.affected_applications().get()
-    elif zypp or apt:
-        return collect_apps()
-    else:
-        raise Exception("Couldn't detect package manager. Failed to query affected apps!")
+    return collect_apps()
 
 
 def get_apps(queryfunc, plugin=None):
