@@ -31,7 +31,7 @@ def collect_services_state():
     output = execute_zypper_ps()
     for service in output:
         if service:
-            app = ZypperTracerApp(service, "systemctl restart " + service, "systemd")
+            app = ZypperTracerApp(service, "systemctl restart " + service, "daemon")
             apps.append(app)
     return apps
 
