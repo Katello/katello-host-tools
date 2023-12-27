@@ -120,7 +120,7 @@ class TestUseNeedRestart(unittest.TestCase):
         # Validate service
         self.assertEqual(apps[0].name, "systemd-logind")
         self.assertEqual(apps[0].helper, "systemctl restart systemd-logind")
-        self.assertEqual(apps[0].type, "systemd")
+        self.assertEqual(apps[0].type, "daemon")
 
     @patch("katello.tracer.deb.needrestart")
     def test_service_and_system_restart(self, m):
@@ -139,7 +139,7 @@ class TestUseNeedRestart(unittest.TestCase):
         # Validate service
         self.assertEqual(apps[1].name, "systemd-logind")
         self.assertEqual(apps[1].helper, "systemctl restart systemd-logind")
-        self.assertEqual(apps[1].type, "systemd")
+        self.assertEqual(apps[1].type, "daemon")
         # Validate kernel
         self.assertEqual(apps[0].name, "kernel")
         self.assertEqual(apps[0].helper, "Please restart your system")

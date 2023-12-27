@@ -55,7 +55,7 @@ def use_needrestart():
         apps.append(app)
 
     for service in services:
-        app = AptTracerApp(service, "systemctl restart " + service, "systemd")
+        app = AptTracerApp(service, "systemctl restart " + service, "daemon")
         apps.append(app)
 
     return apps

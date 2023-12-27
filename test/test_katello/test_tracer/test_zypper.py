@@ -61,7 +61,7 @@ class TestCollectServicesState(unittest.TestCase):
         # Validate service
         self.assertEqual(apps[0].name, "systemd-logind")
         self.assertEqual(apps[0].helper, "systemctl restart systemd-logind")
-        self.assertEqual(apps[0].type, "systemd")
+        self.assertEqual(apps[0].type, "daemon")
 
     @patch("katello.tracer.zypper.execute_zypper_ps")
     def test_no_service_restart_needed(self, m):
@@ -88,7 +88,7 @@ class TestCollectApps(unittest.TestCase):
     @patch("katello.tracer.zypper.collect_services_state")
     @patch("katello.tracer.zypper.check_for_reboot_flag")
     def test_collect_apps_services(self, m, p):
-        expected_output = [ZypperTracerApp("systemd-logind", "systemctl restart systemd-logind", "systemd")] + []
+        expected_output = [ZypperTracerApp("systemd-logind", "systemctl restart systemd-logind", "daemon")] + []
         m.return_value = [expected_output[0]]
         p.return_value = []
         actual_output = collect_apps()
