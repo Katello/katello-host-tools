@@ -14,7 +14,7 @@ STATIC_SERVICES = [
 IGNORE_APPS = [
     "sudo",
     "su",
-    "sd-pam",
+    "(sd-pam)",
 ]
 
 REBOOT_HELPER= 'You will have to reboot your computer'
