@@ -65,20 +65,11 @@ class EnabledRepoCache:
             pass
 
     def is_valid(self):
-        cache_file = None
-        # wrapper try block w/ finally needed for python 2.4
         try:
-            try:
-                cache_file = open(ENABLED_REPOS_CACHE_FILE, 'r')
-                try:
-                    return self.data() == json.loads(cache_file.read())
-                except ValueError:
-                    return False
-            except IOError:
-                return False
-        finally:
-            if cache_file is not None:
-                cache_file.close()
+            with open(ENABLED_REPOS_CACHE_FILE, 'r') as cache_file:
+                return self.data() == json.loads(cache_file.read())
+        except (ValueError, IOError):
+            return False
 
     def data(self):
         return {self.consumer_id: self.content}
@@ -88,10 +79,5 @@ class EnabledRepoCache:
         if not os.path.isdir(cache_dir):
             os.makedirs(cache_dir)
 
-        cache_file = None
-        try:
-            cache_file = open(ENABLED_REPOS_CACHE_FILE, 'w')
+        with open(ENABLED_REPOS_CACHE_FILE, 'w') as cache_file:
             cache_file.write(json.dumps(self.data()))
-        finally:
-            if cache_file is not None:
-                cache_file.close()
