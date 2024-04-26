@@ -1,1 +1,1 @@
-DPkg::Post-Invoke { /usr/bin/tracer-upload }
+DPkg::Post-Invoke { /sbin/katello-tracer-upload }
