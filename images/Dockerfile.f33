@@ -1,4 +1,4 @@
 FROM fedora:33
 
-RUN dnf install pip make python3-dnf-plugins-core python3-tracer subscription-manager -y && dnf clean all
+RUN dnf install pip make python3-dnf-plugins-core subscription-manager -y && dnf clean all
 WORKDIR /app
