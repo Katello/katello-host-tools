@@ -1,4 +1,4 @@
-import imp
+from katello.find_module import find_module
 
 ENABLED_REPOS_CACHE_FILE = '/var/cache/katello-agent/enabled_repos.json'
 PACKAGE_CACHE_FILE = '/var/lib/rhsm/packages/packages.json'
@@ -13,13 +13,13 @@ DISABLE_ENABLE_REPOS_VAR = 'DISABLE_KATELLO_ENABLED_REPOS'
 PROFILE_CACHE_FILE = '/var/lib/rhsm/cache/profile.json'
 
 try:
-    imp.find_module('zypp_plugin')
+    find_module('zypp_plugin')
     ZYPPER = True
 except ImportError:
     ZYPPER = False
 
 try:
-    imp.find_module('yum')
+    find_module('yum')
     YUM = True
 except ImportError:
     YUM = False
