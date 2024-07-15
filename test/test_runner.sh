@@ -11,11 +11,7 @@ fi;
 
 make install
 
-if grep -q -i 'release 5' /etc/redhat-release; then
-  python ./test/unittest_suite.py
-else
-  make test
-fi
+make test
 
 if [ ${PYTHON} = "python3" ]; then
   # don't fail on flake8 for now

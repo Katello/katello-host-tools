@@ -1,4 +1,3 @@
-RHEL5=$(shell grep -q -i 'release 5' /etc/redhat-release 2>/dev/null || false)
 PYTHON3=$(shell which python3 && which pip3)
 USE_SELINUX=$(shell test -d /sys/fs/selinux && echo ":Z")
 DOCKERFILE  ?= $(CURDIR)/images/Dockerfile.el9
@@ -44,9 +43,7 @@ install:
 	cd src/ && $(PYTHON) setup.py install
 
 test-install:
-ifeq ($(RHEL5),) # no pip for RHEL5
 	$(PIP) install -r test-requirements.txt --user
-endif
 
 test: test-install
 	$(PYTHON) test/unittest_suite.py
