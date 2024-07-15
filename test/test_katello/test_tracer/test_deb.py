@@ -38,8 +38,9 @@ NEEDRESTART-SVC: user@0.service """
         output_list = needrestart_output.split("\n")
         m.return_value = needrestart_output
         self.assertEqual(needrestart(), output_list)
-        self.assertEqual(m.call_args.args, (["needrestart", "-b"],))
-        self.assertEqual(m.call_args.kwargs, {"universal_newlines": True})
+        expected_args = (["needrestart", "-b"],)
+        expected_kwargs = {"universal_newlines": True}
+        self.assertEqual(m.call_args, (expected_args, expected_kwargs))
         self.assertEqual(len(collect_apps()), 12)
 
     @patch.object(subprocess, "check_output")
