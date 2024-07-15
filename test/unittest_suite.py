@@ -28,9 +28,8 @@ if sys.version_info[0] == 2:
     else:
         modules.append('test_yum_plugins.test_enabled_repos_upload')
 
-        if sys.version_info[1] > 6:
-            modules.append('test_katello.test_tracer')
-            modules.append('test_katello.test_tracer.test_deb')
+        modules.append('test_katello.test_tracer')
+        modules.append('test_katello.test_tracer.test_deb')
 
     map(__import__, modules)
 
