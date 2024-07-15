@@ -10,6 +10,7 @@ if sys.version_info[0] == 2:
         'test_katello.test_enabled_report',
         'test_katello.test_packages',
         'test_katello.test_repos',
+        'test_katello.test_tracer',
         'test_katello.test_utils'
     ]
 
@@ -23,12 +24,9 @@ if sys.version_info[0] == 2:
         modules.append('zypper_plugins.test_enabled_repos_upload')
         modules.append('zypper_plugins.test_package_upload')
         modules.append('zypper_plugins.test_tracer_upload')
-        modules.append('test_katello.test_tracer')
         modules.append('test_katello.test_tracer.test_zypper')
     else:
         modules.append('test_yum_plugins.test_enabled_repos_upload')
-
-        modules.append('test_katello.test_tracer')
         modules.append('test_katello.test_tracer.test_deb')
 
     map(__import__, modules)
