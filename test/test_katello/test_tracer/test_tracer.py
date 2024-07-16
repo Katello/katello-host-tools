@@ -32,29 +32,18 @@ class TestUploadTracerProfile(unittest.TestCase):
 
 class TestQueryAffectedApps(unittest.TestCase):
     @unittest.skipIf(YUM == False, "Yum not present")
-    @patch('katello.tracer.yum', True)
-    @patch('katello.tracer.dnf', False)
     def test_el_os(self):
         self.assertEqual(query_affected_apps(), [])
 
     @unittest.skipIf(YUM == False, "YUM not present")
-    @patch('katello.tracer.yum', False)
-    @patch('katello.tracer.dnf', False)
-    @patch('katello.tracer.zypp', True)
     def test_failing_zypper_os(self):
         self.assertRaises(Exception, query_affected_apps)
 
     @unittest.skipIf(ZYPPER == False, "ZYPPER not present")
-    @patch('katello.tracer.yum', False)
-    @patch('katello.tracer.dnf', False)
-    @patch('katello.tracer.zypp', True)
     def test_zypper_os(self):
         self.assertEqual(query_affected_apps(), [])
 
     @unittest.skipIf(ZYPPER == False, "ZYPPER not present")
-    @patch('katello.tracer.yum', True)
-    @patch('katello.tracer.dnf', False)
-    @patch('katello.tracer.zypp', False)
     def test_failing_yum_os(self):
         self.assertRaises(Exception, query_affected_apps)
 
