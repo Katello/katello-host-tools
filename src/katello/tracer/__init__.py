@@ -1,18 +1,17 @@
 from __future__ import absolute_import
 from katello.uep import get_uep, lookup_consumer_id
 import sys
-import imp
 
 def collect_apps():
     raise NotImplementedError("Couldn't detect package manager. Failed to query affected apps!")
 
 # RHEL based systems
 try:
-    imp.find_module('dnf')
+    import dnf
     from katello.tracer.dnf import collect_apps
 except ImportError:
     try:
-        imp.find_module('yum')
+        import yum
         from tracer.query import Query
         def collect_apps():
             query = Query()
@@ -22,14 +21,14 @@ except ImportError:
 
 # debian based systems
 try:
-    imp.find_module('apt')
+    import apt
     from katello.tracer.deb import collect_apps
 except ImportError:
     pass
 
 # SUSE based systems
 try:
-    imp.find_module('zypp_plugin')
+    import zypp_plugin
     from katello.tracer.zypper import collect_apps
 except ImportError:
     pass
