@@ -23,6 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         dockerfile:
+          - images/Dockerfile.el10
           - images/Dockerfile.el9
           - images/Dockerfile.el8
           - images/Dockerfile.el7
