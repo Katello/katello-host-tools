@@ -1,7 +1,7 @@
 import os
 import sys
 from dnf_support import PluginTestCase, configure_command
-import unittest2 as unittest
+import unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/dnf-plugins'))

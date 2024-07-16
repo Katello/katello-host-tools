@@ -1,6 +1,6 @@
 import os
 import sys
-import unittest2 as unittest
+import unittest
 from mock import patch
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
 from katello import enabled_report

@@ -1,8 +1,7 @@
 import os
 import sys
 
-from unittest2 import TestCase
-import unittest2 as unittest
+import unittest
 from mock import Mock, patch
 
 try:
@@ -12,7 +11,7 @@ try:
 except:
   pass
 
-class TestEnabledReposUpload(TestCase):
+class TestEnabledReposUpload(unittest.TestCase):
     def setUp(self):
         self.plugin = enabled_repos_upload.EnabledReposUpload()
 

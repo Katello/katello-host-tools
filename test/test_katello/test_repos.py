@@ -2,7 +2,7 @@ import json
 import os
 import sys
 
-from unittest2 import TestCase
+from unittest import TestCase
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
 from katello import repos

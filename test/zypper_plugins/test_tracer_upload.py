@@ -1,8 +1,7 @@
 import os
 import sys
 
-from unittest2 import TestCase
-import unittest2 as unittest
+import unittest
 from mock import Mock, patch
 
 try:
@@ -12,7 +11,7 @@ try:
 except:
     pass
 
-class TestTracerUpload(TestCase):
+class TestTracerUpload(unittest.TestCase):
     def setUp(self):
         self.plugin = tracer_upload.TracerUploadPlugin()
 

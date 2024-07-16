@@ -1,6 +1,6 @@
 import os
 import sys
-import unittest2 as unittest
+import unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
 from katello.tracer import upload_tracer_profile, query_affected_apps
