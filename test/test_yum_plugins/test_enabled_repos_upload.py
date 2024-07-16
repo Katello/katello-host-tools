@@ -6,12 +6,14 @@ from rhsm.connection import RemoteServerException
 from mock import patch, Mock
 import unittest
 
+orig_path = list(sys.path)
 try:
     sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
     sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/yum-plugins'))
     import enabled_repos_upload
 except ImportError:
     print("Yum wasn't present")
+sys.path = orig_path
 
 
 FAKE_REPORT = {'foobar': 1}
