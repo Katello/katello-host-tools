@@ -1,0 +1,8 @@
+FROM opensuse/leap:15
+
+RUN zypper addrepo -c --no-gpgcheck https://oss.atix.de/SLES15SP5/ subscription-manager
+RUN zypper removerepo 'OSS Update'
+RUN zypper clean --all
+RUN zypper install -y make python3-pip subscription-manager python3-zypp-plugin which python3-setuptools lsof
+
+WORKDIR /app
