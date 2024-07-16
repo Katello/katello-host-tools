@@ -1,11 +1,15 @@
 import os
 import sys
-from dnf_support import PluginTestCase, configure_command
 import unittest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/dnf-plugins'))
-import tracer_upload
+try:
+    from dnf_support import PluginTestCase, configure_command
+    import tracer_upload
+except ImportError:
+    class PluginTestCase:
+        pass
 
 from mock import Mock, patch
 
@@ -33,6 +37,7 @@ class TestTracerPlugin(PluginTestCase):
         assert not upload_tracer.called
 
 
+@unittest.skipIf('dnf' not in sys.modules, "DNF not present")
 class TestTracerUploadCommand(unittest.TestCase):
     def setUp(self):
         self.cli = Mock()
