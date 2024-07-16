@@ -4,12 +4,14 @@ import sys
 import unittest
 from mock import Mock, patch
 
+orig_path = list(sys.path)
 try:
     sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
     sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/zypper_plugins'))
     import tracer_upload
 except:
     pass
+sys.path = orig_path
 
 class TestTracerUpload(unittest.TestCase):
     def setUp(self):

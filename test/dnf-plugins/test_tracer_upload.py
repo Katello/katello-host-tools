@@ -2,6 +2,7 @@ import os
 import sys
 import unittest
 
+orig_path = list(sys.path)
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/dnf-plugins'))
 try:
@@ -10,6 +11,7 @@ try:
 except ImportError:
     class PluginTestCase:
         pass
+sys.path = orig_path
 
 from mock import Mock, patch
 
