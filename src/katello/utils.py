@@ -3,7 +3,11 @@ import os
 from os import environ
 
 if sys.version_info[0] == 3:
-    from configparser import ConfigParser
+    from configparser import ConfigParser as BaseConfigParser
+    class ConfigParser(BaseConfigParser):
+        def __init__(self, *args, **kwargs):
+            kwargs['interpolation'] = None
+            super(ConfigParser, self).__init__(*args, **kwargs)
 else:
     from ConfigParser import ConfigParser
 
