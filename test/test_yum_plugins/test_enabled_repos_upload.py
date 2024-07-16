@@ -4,7 +4,7 @@ import sys
 from rhsm.connection import RemoteServerException
 
 from mock import patch, Mock
-import unittest2 as unittest
+import unittest
 
 try:
     sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/'))
