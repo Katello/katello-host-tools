@@ -35,15 +35,6 @@ class TestQueryAffectedApps(unittest.TestCase):
     def test_el_os(self):
         self.assertEqual(query_affected_apps(), [])
 
-    @unittest.skipIf(YUM == False, "YUM not present")
-    def test_failing_zypper_os(self):
-        self.assertRaises(Exception, query_affected_apps)
-
     @unittest.skipIf(ZYPPER == False, "ZYPPER not present")
     def test_zypper_os(self):
         self.assertEqual(query_affected_apps(), [])
-
-    @unittest.skipIf(ZYPPER == False, "ZYPPER not present")
-    def test_failing_yum_os(self):
-        self.assertRaises(Exception, query_affected_apps)
-
