@@ -9,10 +9,7 @@ from katello.utils import combined_profiles_enabled, plugin_enabled
 
 from rhsm.connection import GoneException, RemoteServerException
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 
 def error_message(msg):
