@@ -75,9 +75,7 @@ class EnabledRepoCache:
                 except ValueError:
                     return False
             except IOError:
-                error = sys.exc_info()[1]  # backward and forward compatible way to get the exception
-                if error.errno == errno.ENOENT:
-                    return False
+                return False
         finally:
             if cache_file is not None:
                 cache_file.close()
