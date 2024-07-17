@@ -43,7 +43,7 @@ install:
 	cd src/ && $(PYTHON) setup.py install
 
 test-install:
-	$(PIP) install -r test-requirements.txt --user
+	$(PIP) install -r test-requirements.txt
 
 test: test-install
 	$(PYTHON) test/unittest_suite.py
