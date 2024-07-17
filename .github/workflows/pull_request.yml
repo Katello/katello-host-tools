@@ -23,6 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         dockerfile:
+          - images/Dockerfile.debian12
           - images/Dockerfile.debian11
           - images/Dockerfile.el10
           - images/Dockerfile.el9
