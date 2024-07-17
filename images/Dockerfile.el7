@@ -2,5 +2,5 @@ FROM quay.io/centos/centos:7
 
 RUN sed -i -e 's/^mirrorlist/#mirrorlist/g; /^#baseurl/ s/^#//; /baseurl/ s/mirror/vault/g' /etc/yum.repos.d/CentOS-Base.repo
 RUN yum install -y epel-release https://yum.theforeman.org/client/nightly/el7/x86_64/foreman-client-release.rpm && yum clean all
-RUN yum install make python-setuptools python-tracer subscription-manager python-pip python2-mock -y && yum clean all
+RUN yum install make python-setuptools python-tracer subscription-manager python-pip python-virtualenv python2-mock -y && yum clean all
 WORKDIR /app

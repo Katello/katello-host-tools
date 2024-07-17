@@ -4,10 +4,14 @@ set -e
 
 if command -v python3;  then
   export PYTHON=python3
-  mkdir -p /usr/local/lib/python3.6/site-packages
+  VENV="${PYTHON} -m venv"
 else
   export PYTHON=python2
+  VENV="virtualenv"
 fi;
+
+${VENV} --system-site-packages ./venv
+. ./venv/bin/activate
 
 make install
 
