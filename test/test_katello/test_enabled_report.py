@@ -21,8 +21,8 @@ class TestEnabledReport(unittest.TestCase):
 
         self.assertEqual(expected, report.content)
 
-    @unittest.skipIf(ZYPPER == False, "Zypper not present")
     @patch('katello.enabled_report.YUM', False)
+    @patch('katello.enabled_report.ZYPPER', True)
     def test_zypper_valid(self):
         rh_repo = os.path.join(os.path.dirname(__file__), 'data/repos/redhat.repo.suse')
         report = enabled_report.EnabledReport(rh_repo)
