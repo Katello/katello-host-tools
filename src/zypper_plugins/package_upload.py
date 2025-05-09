@@ -14,12 +14,12 @@
 
 from os import readlink, getppid, environ
 from os.path import basename
-import sys
 import logging
 
 from katello.packages import upload_package_profile
 
 from zypp_plugin import Plugin
+
 
 class KatelloZyppPlugin(Plugin):
 
@@ -29,7 +29,6 @@ class KatelloZyppPlugin(Plugin):
         self.description = ""
         self.cleanup = "number"
         self.userdata = {}
-
 
     def parse_userdata(self, s):
         userdata = {}
@@ -41,7 +40,6 @@ class KatelloZyppPlugin(Plugin):
             userdata[k] = v.strip()
         return userdata
 
-
     def get_userdata(self, headers):
         try:
             return self.parse_userdata(headers['userdata'])
@@ -51,13 +49,12 @@ class KatelloZyppPlugin(Plugin):
             logging.error("invalid userdata")
         return {}
 
-
-    def PLUGINBEGIN(self, headers, body):
+    def PLUGINBEGIN(self, headers, _body):
         self.description = "zypp(%s)" % basename(readlink("/proc/%d/exe" % getppid()))
         self.userdata = self.get_userdata(headers)
         self.ack()
 
-    def PLUGINEND(self, headers, body):
+    def PLUGINEND(self, _headers, _body):
         logging.info("Uploading Package Profile")
         try:
             upload_package_profile()
