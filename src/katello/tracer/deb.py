@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from os import path
 import subprocess
-import sys
+
 try:
     from shutil import which
 except ImportError:  # on Python 2
@@ -38,6 +38,16 @@ def needrestart():
         raise SystemExit("Please install needrestart")
 
 
+def generate_restart_command(service):
+    if service == "dbus-broker":
+        cmd = "systemctl restart dbus"
+    elif service == "systemd-manager":
+        cmd = "systemctl daemon-reexec"
+    else:
+        cmd = "systemctl restart " + service
+    return cmd
+
+
 def use_needrestart():
     apps = []
     services = []
@@ -55,7 +65,8 @@ def use_needrestart():
         apps.append(app)
 
     for service in services:
-        app = AptTracerApp(service, "systemctl restart " + service, "daemon")
+        cmd = generate_restart_command(service)
+        app = AptTracerApp(service, cmd, "daemon")
         apps.append(app)
 
     return apps
