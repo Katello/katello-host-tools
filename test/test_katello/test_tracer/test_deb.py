@@ -4,14 +4,12 @@ from katello.tracer.deb import (
     has_needrestart,
     use_flag,
     use_needrestart,
-    use_needrestart,
     AptTracerApp,
     collect_apps
 )
 import subprocess
-import sys
 
-from mock import patch, Mock
+from mock import patch
 
 
 class TestNeedrestart(unittest.TestCase):
