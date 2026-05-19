@@ -1,0 +1,9 @@
+[Unit]
+Description=Run katello-tracer-upload.service 1min after boot
+
+[Timer]
+OnBootSec=60s
+RandomizedDelaySec=30s
+
+[Install]
+WantedBy=timers.target
