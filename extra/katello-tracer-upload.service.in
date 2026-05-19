@@ -1,0 +1,8 @@
+[Unit]
+Description=Upload a katello tracer report
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=@SBIN_PATH@/katello-tracer-upload
