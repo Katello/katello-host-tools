@@ -24,13 +24,10 @@ jobs:
       matrix:
         dockerfile:
           - images/Dockerfile.debian12
-          - images/Dockerfile.debian11
           - images/Dockerfile.el10
           - images/Dockerfile.el9
           - images/Dockerfile.el8
           - images/Dockerfile.el7
-          - images/Dockerfile.f34
-          - images/Dockerfile.f33
           - images/Dockerfile.suseLeap42
           - images/Dockerfile.suseLeap15
     steps:
