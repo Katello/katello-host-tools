@@ -24,6 +24,7 @@ jobs:
       matrix:
         dockerfile:
           - images/Dockerfile.debian12
+          - images/Dockerfile.debian13
           - images/Dockerfile.el10
           - images/Dockerfile.el9
           - images/Dockerfile.el8
